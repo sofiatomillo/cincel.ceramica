@@ -4,6 +4,7 @@ import CatalogView from '../views/CatalogView.vue';
 import DetailView from '../views/DetailView.vue';
 import PieceFormView from '../views/PieceFormView.vue';
 import AboutView from '../views/AboutView.vue';
+import SalesView from '../views/SalesView.vue';
 
 const routes = [
   {
@@ -37,6 +38,11 @@ const routes = [
     path: '/acerca-de',
     name: 'About',
     component: AboutView,
+  },
+  {
+    path: '/ventas',
+    name: 'Sales',
+    component: SalesView,
   },
 ];
 

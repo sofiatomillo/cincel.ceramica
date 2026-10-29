@@ -318,6 +318,7 @@
 <script>
 import { X, Trash2, ShoppingBag, ArrowRight, ShieldCheck, Truck, Check } from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
+import { salesService } from '../services/salesService';
 
 export default {
   name: 'CartDrawer',
@@ -376,8 +377,17 @@ export default {
     // Hook mounted ejecutado en CartDrawer
   },
   methods: {
-    handleCheckoutSubmit() {
+    async handleCheckoutSubmit() {
       this.orderNumber = `CIN-${Math.floor(100000 + Math.random() * 900000)}`;
+      
+      // Registrar la venta en Supabase y persistencia local
+      await salesService.recordSale(
+        this.customer,
+        cartService.cart,
+        this.total,
+        this.customer.paymentMethod || 'mercadopago'
+      );
+
       this.orderCompleted = true;
     },
     handleFinish() {

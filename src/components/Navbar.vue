@@ -12,7 +12,7 @@
       </router-link>
 
       <!-- Enlaces de Navegación (Desktop) -->
-      <nav class="hidden md:flex items-center gap-7">
+      <nav class="hidden md:flex items-center gap-6 lg:gap-7">
         <router-link
           to="/"
           class="text-sm font-medium transition-colors"
@@ -43,10 +43,33 @@
         >
           Contacto
         </router-link>
+
+        <!-- Enlace a Ventas (Visible solo para administradores) -->
+        <router-link
+          v-if="isAdmin"
+          to="/ventas"
+          class="inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-2.5 py-1 rounded-lg bg-[#FAF0E6] text-[#C85A54] hover:bg-[#FBE4E2]"
+          :class="[$route.path === '/ventas' ? 'ring-1 ring-[#F28482] font-semibold' : '']"
+        >
+          <BarChart3 class="w-3.5 h-3.5" />
+          <span>Ventas</span>
+          <span class="text-[9px] bg-[#F28482] text-white px-1.5 py-0.2 rounded-full font-bold">Admin</span>
+        </router-link>
       </nav>
 
       <!-- Acciones del Header -->
       <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Botón Exportar SQL (Supabase) -->
+        <button
+          @click="isSqlModalOpen = true"
+          type="button"
+          class="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all cursor-pointer shadow-2xs"
+          title="Exportar esquema SQL para Supabase"
+        >
+          <Database class="w-3.5 h-3.5 text-[#3ECF8E]" />
+          <span>Export SQL</span>
+        </button>
+
         <!-- Botón Carrito de Compra -->
         <button
           @click="cartService.isCartOpen = true"
@@ -63,14 +86,124 @@
           </span>
         </button>
 
-        <!-- Botón Alta Rápida de Pieza -->
+        <!-- Botón Alta Rápida de Pieza (Admin) -->
         <router-link
+          v-if="isAdmin"
           to="/piezas/nueva"
-          class="inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-medium text-white bg-[#F28482] hover:bg-[#E06F6D] rounded-xl shadow-sm transition-all hover:shadow-md cursor-pointer"
+          class="hidden sm:inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-medium text-white bg-[#F28482] hover:bg-[#E06F6D] rounded-xl shadow-sm transition-all hover:shadow-md cursor-pointer"
         >
           <Plus class="w-3.5 h-3.5" />
           <span>Nueva Pieza</span>
         </router-link>
+
+        <!-- Menú de Usuario / Autenticación -->
+        <div class="relative">
+          <button
+            v-if="currentUser"
+            @click="userMenuOpen = !userMenuOpen"
+            type="button"
+            class="inline-flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[#E6DFD5] bg-white hover:bg-[#F3EFEA] transition-colors cursor-pointer text-xs"
+          >
+            <div class="w-7 h-7 rounded-full bg-[#1E1B18] text-white flex items-center justify-center font-bold text-xs uppercase overflow-hidden shrink-0">
+              <img
+                v-if="currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture"
+                :src="currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture"
+                alt="Avatar"
+                class="w-full h-full object-cover"
+              />
+              <span v-else>{{ userInitial }}</span>
+            </div>
+            <div class="hidden sm:flex flex-col text-left leading-tight">
+              <span class="font-medium text-[#1E1B18] truncate max-w-[100px]">
+                {{ userName }}
+              </span>
+              <span
+                v-if="isAdmin"
+                class="text-[9px] font-semibold text-[#F28482] uppercase"
+              >
+                Admin
+              </span>
+              <span v-else class="text-[9px] text-[#8D857B]">
+                Cliente
+              </span>
+            </div>
+            <ChevronDown class="w-3.5 h-3.5 text-[#8D857B] hidden sm:inline" />
+          </button>
+
+          <!-- Botón Iniciar Sesión (si no hay sesión) -->
+          <button
+            v-else
+            @click="isAuthModalOpen = true"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all shadow-2xs cursor-pointer"
+          >
+            <User class="w-3.5 h-3.5 text-[#8D857B]" />
+            <span class="hidden sm:inline">Ingresar</span>
+          </button>
+
+          <!-- Dropdown Menú de Usuario -->
+          <div
+            v-if="userMenuOpen && currentUser"
+            class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#E6DFD5] py-2 z-50 animate-fade-in"
+          >
+            <div class="px-4 py-3 border-b border-[#F3EFEA]">
+              <p class="text-xs font-semibold text-[#1E1B18] truncate">
+                {{ userName }}
+              </p>
+              <p class="text-[11px] text-[#8D857B] truncate">
+                {{ currentUser.email }}
+              </p>
+              <div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                :class="isAdmin ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-[#FAF7F2] text-[#6B655D] border border-[#E6DFD5]'"
+              >
+                <Shield v-if="isAdmin" class="w-3 h-3 text-[#F28482]" />
+                <span>{{ isAdmin ? 'Administrador del Catálogo' : 'Cliente Registrado' }}</span>
+              </div>
+            </div>
+
+            <div class="py-1">
+              <router-link
+                v-if="isAdmin"
+                to="/piezas/nueva"
+                @click="userMenuOpen = false"
+                class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
+              >
+                <Plus class="w-3.5 h-3.5 text-[#F28482]" />
+                <span>+ Crear nueva pieza</span>
+              </router-link>
+
+              <router-link
+                v-if="isAdmin"
+                to="/ventas"
+                @click="userMenuOpen = false"
+                class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
+              >
+                <BarChart3 class="w-3.5 h-3.5 text-[#F28482]" />
+                <span>Panel de ventas y pedidos</span>
+              </router-link>
+
+              <button
+                @click="isSqlModalOpen = true; userMenuOpen = false"
+                type="button"
+                class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors text-left cursor-pointer"
+              >
+                <Database class="w-3.5 h-3.5 text-[#3ECF8E]" />
+                <span>Exportar SQL (Supabase)</span>
+              </button>
+            </div>
+
+            <div class="pt-1 border-t border-[#F3EFEA]">
+              <button
+                @click="handleLogout"
+                type="button"
+                class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors text-left cursor-pointer font-medium"
+              >
+                <LogOut class="w-3.5 h-3.5" />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Menú móvil toggle -->
         <button
@@ -110,6 +243,36 @@
       >
         Página Acerca de
       </router-link>
+
+      <router-link
+        v-if="isAdmin"
+        to="/ventas"
+        @click="mobileMenuOpen = false"
+        class="block py-2 text-sm font-semibold text-[#C85A54] flex items-center justify-between"
+      >
+        <span>Panel de Ventas</span>
+        <span class="text-[10px] bg-[#F28482] text-white px-2 py-0.5 rounded-full">Admin</span>
+      </router-link>
+
+      <router-link
+        v-if="isAdmin"
+        to="/piezas/nueva"
+        @click="mobileMenuOpen = false"
+        class="block py-2 text-sm font-semibold text-[#1E1B18] flex items-center gap-2"
+      >
+        <Plus class="w-4 h-4 text-[#F28482]" />
+        <span>+ Nueva Pieza</span>
+      </router-link>
+
+      <button
+        @click="mobileMenuOpen = false; isSqlModalOpen = true"
+        type="button"
+        class="w-full text-left py-2 text-sm font-medium text-[#2D2A26] flex items-center gap-2 cursor-pointer"
+      >
+        <Database class="w-4 h-4 text-[#3ECF8E]" />
+        <span>Exportar Esquema SQL</span>
+      </button>
+
       <button
         @click="mobileMenuOpen = false; cartService.isCartOpen = true"
         class="w-full text-left py-2 text-sm font-medium text-[#1E1B18] flex items-center gap-2 cursor-pointer border-t border-[#E6DFD5] pt-3"
@@ -117,14 +280,62 @@
         <ShoppingBag class="w-4 h-4 text-[#F28482]" />
         <span>Ver Cesta de Compra ({{ totalCartItems }})</span>
       </button>
+
+      <div class="border-t border-[#E6DFD5] pt-3">
+        <button
+          v-if="!currentUser"
+          @click="mobileMenuOpen = false; isAuthModalOpen = true"
+          class="w-full text-left py-2 text-sm font-medium text-[#F28482] flex items-center gap-2 cursor-pointer"
+        >
+          <User class="w-4 h-4" />
+          <span>Iniciar sesión / Registrarse</span>
+        </button>
+        <div v-else class="flex items-center justify-between py-2">
+          <div class="text-xs">
+            <span class="font-semibold block text-[#1E1B18]">{{ userName }}</span>
+            <span class="text-[#8D857B]">{{ currentUser.email }}</span>
+          </div>
+          <button
+            @click="handleLogout"
+            class="text-xs text-red-600 font-medium hover:underline cursor-pointer"
+          >
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
     </div>
+
+    <!-- Modales de Autenticación y Exportación SQL -->
+    <AuthModal
+      :isOpen="isAuthModalOpen"
+      @close="isAuthModalOpen = false"
+    />
+
+    <SqlExportModal
+      :isOpen="isSqlModalOpen"
+      @close="isSqlModalOpen = false"
+    />
   </header>
 </template>
 
 <script>
-import { ShoppingBag, Menu, X, Plus } from 'lucide-vue-next';
+import {
+  ShoppingBag,
+  Menu,
+  X,
+  Plus,
+  User,
+  LogOut,
+  Shield,
+  ChevronDown,
+  Database,
+  BarChart3,
+} from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
 import { ceramicsService } from '../services/ceramicsService';
+import { authService } from '../services/authService';
+import AuthModal from './AuthModal.vue';
+import SqlExportModal from './SqlExportModal.vue';
 
 export default {
   name: 'Navbar',
@@ -133,15 +344,26 @@ export default {
     Menu,
     X,
     Plus,
+    User,
+    LogOut,
+    Shield,
+    ChevronDown,
+    Database,
+    BarChart3,
+    AuthModal,
+    SqlExportModal,
   },
   data() {
     return {
       mobileMenuOpen: false,
+      userMenuOpen: false,
+      isAuthModalOpen: false,
+      isSqlModalOpen: false,
       cartService,
       ceramicsService,
+      authService,
     };
   },
-  // Propiedades computadas seguras
   computed: {
     totalCount() {
       const p = ceramicsService.pieces;
@@ -152,13 +374,45 @@ export default {
       const t = cartService.totalItems;
       return typeof t === 'number' ? t : (t?.value || 0);
     },
+    currentUser() {
+      return authService.user.value;
+    },
+    isAdmin() {
+      return authService.isAdmin.value;
+    },
+    userName() {
+      const u = authService.user.value;
+      if (!u) return '';
+      return (
+        u.user_metadata?.full_name ||
+        u.user_metadata?.name ||
+        authService.profile.value?.full_name ||
+        u.email?.split('@')[0] ||
+        'Usuario'
+      );
+    },
+    userInitial() {
+      const name = this.userName || 'U';
+      return name.charAt(0).toUpperCase();
+    },
   },
-  // Hooks del ciclo de vida requeridos: created() y mounted()
+  methods: {
+    async handleLogout() {
+      this.userMenuOpen = false;
+      this.mobileMenuOpen = false;
+      await authService.signOut();
+    },
+  },
   created() {
     // Hook created ejecutado en Navbar
   },
   mounted() {
-    // Hook mounted ejecutado en Navbar
+    // Cerrar menú de usuario al hacer click afuera
+    window.addEventListener('click', (e) => {
+      if (this.userMenuOpen && !e.target.closest('.relative')) {
+        this.userMenuOpen = false;
+      }
+    });
   },
 };
 </script>

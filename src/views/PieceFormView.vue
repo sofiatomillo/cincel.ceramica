@@ -21,13 +21,13 @@
       <div class="bg-white rounded-3xl border border-[#E6DFD5] shadow-lg p-6 sm:p-10">
         <div class="mb-8 pb-6 border-b border-[#E6DFD5]">
           <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[#F28482] block mb-2">
-            GESTIÓN DE REGISTROS (LOCALSTORAGE)
+            CATÁLOGO CINCEL (SUPABASE & PERSISTENCIA LOCAL)
           </span>
           <h1 class="font-serif text-3xl sm:text-4xl font-semibold text-[#1E1B18]">
             {{ isEditing ? `Modificar: ${form.title || 'Pieza'}` : 'Crear Nuevo Registro de Pieza' }}
           </h1>
           <p class="text-xs sm:text-sm text-[#6B655D] mt-2">
-            Los datos se guardan en el almacenamiento local del navegador (LocalStorage) y persistirán de forma automática.
+            Los datos se sincronizan con la base de datos Supabase y se respaldan en el almacenamiento local para máxima velocidad y disponibilidad offline.
           </p>
         </div>
 
@@ -38,7 +38,7 @@
             class="mb-6 p-4 bg-[#E8F5E9] border border-[#C8E6C9] rounded-2xl flex items-center gap-3 text-xs text-[#2E7D32] font-medium"
           >
             <CheckCircle2 class="w-5 h-5 shrink-0" />
-            <span>¡Registro guardado exitosamente en LocalStorage! Redirigiendo...</span>
+            <span>¡Registro guardado exitosamente en la base de datos! Redirigiendo...</span>
           </div>
         </Transition>
 
@@ -422,7 +422,7 @@ export default {
       return Object.keys(this.errors).length === 0;
     },
 
-    handleSubmit() {
+    async handleSubmit() {
       this.hasAttemptedSubmit = true;
       if (!this.validateAll()) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -430,7 +430,7 @@ export default {
       }
 
       if (this.isEditing) {
-        const updated = ceramicsService.update(this.$route.params.id, { ...this.form });
+        const updated = await ceramicsService.update(this.$route.params.id, { ...this.form });
         if (updated) {
           this.saveSuccess = true;
           setTimeout(() => {
@@ -438,7 +438,7 @@ export default {
           }, 900);
         }
       } else {
-        const created = ceramicsService.create({ ...this.form });
+        const created = await ceramicsService.create({ ...this.form });
         this.saveSuccess = true;
         setTimeout(() => {
           this.$router.push(`/piezas/${created.id}`);
