@@ -63,24 +63,24 @@
         <button
           @click="isSqlModalOpen = true"
           type="button"
-          class="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all cursor-pointer shadow-2xs"
+          class="hidden lg:inline-flex items-center justify-center gap-1.5 h-10 px-3.5 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all cursor-pointer shadow-2xs leading-none"
           title="Exportar esquema SQL para Supabase"
         >
-          <Database class="w-3.5 h-3.5 text-[#3ECF8E]" />
+          <Database class="w-4 h-4 text-[#3ECF8E] shrink-0" />
           <span>Export SQL</span>
         </button>
 
         <!-- Botón Carrito de Compra -->
         <button
           @click="cartService.isCartOpen = true"
-          class="relative inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium bg-white hover:bg-[#F3EFEA] text-[#1E1B18] rounded-xl border border-[#E6DFD5] transition-all shadow-2xs cursor-pointer"
+          class="relative inline-flex items-center justify-center gap-2 h-10 px-3.5 text-xs font-medium bg-white hover:bg-[#F3EFEA] text-[#1E1B18] rounded-xl border border-[#E6DFD5] transition-all shadow-2xs cursor-pointer leading-none"
           aria-label="Abrir cesta de compra"
         >
-          <ShoppingBag class="w-4 h-4 text-[#F28482]" />
+          <ShoppingBag class="w-4 h-4 text-[#F28482] shrink-0" />
           <span class="hidden sm:inline">Cesta</span>
           <span
             v-if="totalCartItems > 0"
-            class="inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#F28482] rounded-full"
+            class="inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#F28482] rounded-full shrink-0"
           >
             {{ totalCartItems }}
           </span>
@@ -90,19 +90,19 @@
         <router-link
           v-if="isAdmin"
           to="/piezas/nueva"
-          class="hidden sm:inline-flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-medium text-white bg-[#F28482] hover:bg-[#E06F6D] rounded-xl shadow-sm transition-all hover:shadow-md cursor-pointer"
+          class="hidden sm:inline-flex items-center justify-center gap-1.5 h-10 px-3.5 sm:px-4 text-xs font-medium text-white bg-[#F28482] hover:bg-[#E06F6D] rounded-xl shadow-sm transition-all hover:shadow-md cursor-pointer leading-none"
         >
-          <Plus class="w-3.5 h-3.5" />
+          <Plus class="w-4 h-4 shrink-0" />
           <span>Nueva Pieza</span>
         </router-link>
 
         <!-- Menú de Usuario / Autenticación -->
-        <div class="relative">
+        <div class="relative flex items-center">
           <button
             v-if="currentUser"
             @click="userMenuOpen = !userMenuOpen"
             type="button"
-            class="inline-flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-[#E6DFD5] bg-white hover:bg-[#F3EFEA] transition-colors cursor-pointer text-xs"
+            class="inline-flex items-center gap-2 h-10 px-2 sm:px-3 rounded-xl border border-[#E6DFD5] bg-white hover:bg-[#F3EFEA] transition-colors cursor-pointer text-xs leading-none"
           >
             <div class="w-7 h-7 rounded-full bg-[#1E1B18] text-white flex items-center justify-center font-bold text-xs uppercase overflow-hidden shrink-0">
               <img
@@ -127,7 +127,7 @@
                 Cliente
               </span>
             </div>
-            <ChevronDown class="w-3.5 h-3.5 text-[#8D857B] hidden sm:inline" />
+            <ChevronDown class="w-3.5 h-3.5 text-[#8D857B] hidden sm:inline shrink-0" />
           </button>
 
           <!-- Botón Iniciar Sesión (si no hay sesión) -->
@@ -135,16 +135,16 @@
             v-else
             @click="isAuthModalOpen = true"
             type="button"
-            class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all shadow-2xs cursor-pointer"
+            class="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all shadow-2xs cursor-pointer leading-none"
           >
-            <User class="w-3.5 h-3.5 text-[#8D857B]" />
+            <User class="w-4 h-4 text-[#8D857B] shrink-0" />
             <span class="hidden sm:inline">Ingresar</span>
           </button>
 
           <!-- Dropdown Menú de Usuario -->
           <div
             v-if="userMenuOpen && currentUser"
-            class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#E6DFD5] py-2 z-50 animate-fade-in"
+            class="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#E6DFD5] py-2 z-50 animate-fade-in"
           >
             <div class="px-4 py-3 border-b border-[#F3EFEA]">
               <p class="text-xs font-semibold text-[#1E1B18] truncate">

@@ -1,13 +1,14 @@
 <template>
-  <Transition name="fade">
-    <div
-      v-if="isOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
-      @click.self="$emit('close')"
-    >
-      <div class="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border border-[#E6DFD5] relative flex flex-col max-h-[90vh]">
+  <Teleport to="body">
+    <Transition name="fade">
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-[9999] overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5"
+        @click.self="$emit('close')"
+      >
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl border border-[#E6DFD5] relative flex flex-col max-h-[calc(100vh-2rem)] my-auto animate-scale-in z-[10000]">
         <!-- Cabecera -->
-        <div class="flex items-start justify-between pb-4 border-b border-[#E6DFD5]">
+        <div class="flex items-start justify-between pb-3 border-b border-[#E6DFD5]">
           <div>
             <div class="inline-flex items-center gap-2 mb-1">
               <span class="w-2.5 h-2.5 rounded-full bg-[#2E7D32]" />
@@ -15,17 +16,17 @@
                 EXPORT SQL PARA SUPABASE
               </span>
             </div>
-            <h2 class="font-serif text-2xl font-semibold text-[#1E1B18]">
+            <h2 class="font-serif text-xl sm:text-2xl font-semibold text-[#1E1B18]">
               Script SQL de Base de Datos y Políticas RLS
             </h2>
-            <p class="text-xs text-[#6B655D] mt-1">
+            <p class="text-xs text-[#6B655D] mt-0.5">
               Copia este script y pégalo en el <strong>SQL Editor</strong> de tu proyecto Supabase (<code>https://nlytouuurttlpcrjzbty.supabase.co</code>) para crear las tablas de <code>profiles</code>, <code>products</code>, <code>sales</code> y <code>sale_items</code>.
             </p>
           </div>
 
           <button
             @click="$emit('close')"
-            class="p-2 text-[#8D857B] hover:text-[#1E1B18] rounded-xl hover:bg-[#FAF7F2] transition-colors cursor-pointer"
+            class="p-2 text-[#8D857B] hover:text-[#1E1B18] rounded-xl hover:bg-[#FAF7F2] transition-colors cursor-pointer shrink-0 ml-3"
             aria-label="Cerrar modal"
           >
             <X class="w-5 h-5" />
@@ -33,16 +34,16 @@
         </div>
 
         <!-- Instrucciones Rápidas -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
-          <div class="p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DFD5] text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 my-3">
+          <div class="p-2.5 bg-[#FAF7F2] rounded-xl border border-[#E6DFD5] text-xs">
             <strong class="block text-[#1E1B18] mb-0.5">1. Copiar SQL</strong>
             <span class="text-[#6B655D]">Presiona el botón "Copiar SQL" a continuación.</span>
           </div>
-          <div class="p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DFD5] text-xs">
+          <div class="p-2.5 bg-[#FAF7F2] rounded-xl border border-[#E6DFD5] text-xs">
             <strong class="block text-[#1E1B18] mb-0.5">2. Abrir Supabase</strong>
             <span class="text-[#6B655D]">Ve a tu panel de Supabase → <strong>SQL Editor</strong> → <em>New Query</em>.</span>
           </div>
-          <div class="p-3 bg-[#FAF7F2] rounded-xl border border-[#E6DFD5] text-xs">
+          <div class="p-2.5 bg-[#FAF7F2] rounded-xl border border-[#E6DFD5] text-xs">
             <strong class="block text-[#1E1B18] mb-0.5">3. Ejecutar (Run)</strong>
             <span class="text-[#6B655D]">Pega el código y pulsa <strong>Run</strong>. ¡Todo listo!</span>
           </div>
@@ -90,6 +91,7 @@
       </div>
     </div>
   </Transition>
+  </Teleport>
 </template>
 
 <script>
