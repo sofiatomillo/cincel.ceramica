@@ -1,0 +1,6 @@
+{
+  "name": "Cincel Cerámica — Catálogo y Estudio Artesanal",
+  "description": "Sitio web responsivo e interactivo de Cincel Cerámica con catálogo de piezas artesanales, servicios a medida, historia del estudio y visor de código HTML/CSS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
