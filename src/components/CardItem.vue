@@ -31,18 +31,18 @@
         <div class="flex items-baseline justify-between mb-2">
           <router-link
             :to="`/piezas/${piece.id}`"
-            class="font-serif text-2xl font-semibold text-[#1E1B18] group-hover:text-[#F28482] transition-colors"
+            class="font-serif text-xl sm:text-[22px] font-semibold text-[#1E1B18] group-hover:text-[#F28482] transition-colors leading-tight"
           >
             {{ piece.title }}
           </router-link>
-          <span class="text-lg font-serif font-bold text-[#1E1B18]">
+          <span class="text-base sm:text-lg font-serif font-bold text-[#1E1B18] shrink-0 ml-2">
             {{ formattedPrice }}
           </span>
         </div>
-        <p class="text-xs text-[#6B655D] leading-relaxed mb-4 line-clamp-2">
+        <p class="text-sm text-[#5C564E] leading-relaxed mb-4 line-clamp-2 font-normal">
           {{ piece.description }}
         </p>
-        <div class="text-[11px] text-[#8D857B] space-y-0.5 mb-5">
+        <div class="text-xs text-[#8D857B] space-y-0.5 mb-5">
           <p class="truncate">• {{ piece.dimensions }}</p>
           <p class="truncate">• {{ piece.material }}</p>
         </div>

@@ -66,11 +66,11 @@
                 </span>
               </div>
 
-              <h1 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1E1B18] mb-4">
+              <h1 class="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-[#1E1B18] mb-4">
                 {{ piece.title }}
               </h1>
 
-              <p class="text-sm sm:text-base text-[#6B655D] leading-relaxed mb-6">
+              <p class="text-base sm:text-lg text-[#5C564E] leading-relaxed mb-6 font-normal">
                 {{ piece.longDescription || piece.description }}
               </p>
 

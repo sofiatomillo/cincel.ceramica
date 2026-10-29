@@ -49,11 +49,11 @@
               </span>
             </div>
 
-            <h3 class="font-serif text-3xl font-semibold text-[#1E1B18] mb-3">
+            <h3 class="font-serif text-2xl font-semibold text-[#1E1B18] mb-3">
               {{ cartService.selectedPiece.title }}
             </h3>
 
-            <p class="text-[#6B655D] text-sm leading-relaxed mb-6">
+            <p class="text-[#5C564E] text-base leading-relaxed mb-6 font-normal">
               {{ cartService.selectedPiece.longDescription }}
             </p>
 
