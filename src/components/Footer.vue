@@ -12,17 +12,17 @@
             </span>
           </div>
           <p class="text-sm text-[#9E958B] max-w-sm leading-relaxed">
-            Formas simples. Espacios con carácter. Sistema de gestión y catálogo artesanal con persistencia en LocalStorage y arquitectura Vue 3 Router.
+            Formas simples. Espacios con carácter. Cerámica contemporánea y piezas utilitarias elaboradas a mano en torno artesanal, celebrando la textura natural del barro y la belleza de lo imperfecto.
           </p>
           <div class="pt-2 text-xs text-[#9E958B] space-y-1">
-            <p>C/ del Torno, 14 · Madrid, España</p>
-            <p>hola@cincelceramica.es · +34 912 345 678</p>
+            <p>Gorriti 4825, Palermo Soho · CABA, Argentina</p>
+            <p>hola@cincelceramica.com.ar · +54 11 4832-6540</p>
           </div>
         </div>
 
         <div>
           <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">
-            Navegación Vue Router
+            Navegación
           </h4>
           <ul class="space-y-2 text-sm text-[#9E958B]">
             <li>
@@ -50,7 +50,7 @@
 
         <div>
           <h4 class="text-xs font-semibold uppercase tracking-widest text-white mb-4">
-            Gestión y Carrito
+            Taller y Tienda
           </h4>
           <ul class="space-y-2 text-sm text-[#9E958B]">
             <li>
@@ -66,7 +66,7 @@
                 @click="ceramicsService.resetToDefaults()"
                 class="hover:text-[#F28482] transition-colors text-left bg-transparent border-none p-0 cursor-pointer text-xs"
               >
-                Restablecer datos LocalStorage
+                Restablecer catálogo inicial
               </button>
             </li>
             <li>
@@ -80,7 +80,7 @@
 
       <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8D857B]">
         <p>© 2026 Cincel Cerámica. Todos los derechos reservados.</p>
-        <p>Aplicación Vue 3 con CRUD completo y almacenamiento en LocalStorage.</p>
+        <p>Piezas artesanales horneadas a alta temperatura con esmaltes minerales únicos.</p>
       </div>
     </div>
   </footer>
