@@ -58,7 +58,7 @@
           <span>Comprar pieza</span>
         </button>
 
-        <!-- Acciones CRUD (Ver Detalle, Editar, Eliminar) -->
+        <!-- Acciones: Ver Detalle y Gestión Administrativa (solo admin) -->
         <div class="flex items-center justify-between text-xs pt-1">
           <router-link
             :to="`/piezas/${piece.id}`"
@@ -68,7 +68,8 @@
             <ArrowRight class="w-3 h-3" />
           </router-link>
 
-          <div class="flex items-center gap-2">
+          <!-- Acciones de administración exclusivas para administradores -->
+          <div v-if="isAdmin" class="flex items-center gap-2">
             <router-link
               :to="`/piezas/editar/${piece.id}`"
               class="p-1.5 text-[#6B655D] hover:text-[#1E1B18] hover:bg-[#FAF7F2] rounded-lg transition-colors"
@@ -95,6 +96,7 @@
 <script>
 import { ShoppingBag, ArrowRight, Edit3, Trash2 } from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
+import { authService } from '../services/authService';
 
 export default {
   name: 'CardItem',
@@ -114,10 +116,14 @@ export default {
   data() {
     return {
       cartService,
+      authService,
     };
   },
-  // Propiedad computada
+  // Propiedades computadas
   computed: {
+    isAdmin() {
+      return authService.isAdmin.value;
+    },
     formattedPrice() {
       if (this.piece.price) return this.piece.price;
       return cartService.formatARS(this.piece.priceNumber || 0);

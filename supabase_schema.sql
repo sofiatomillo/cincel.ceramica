@@ -555,5 +555,38 @@ ON CONFLICT (id) DO UPDATE SET
   updated_at = timezone('utc'::text, now());
 
 -- ==============================================================================
+-- 6. TABLA DE CONTENIDO DEL SITIO (site_content)
+-- Textos, imágenes y configuración editables por el Administrador
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.site_content (
+  section_key TEXT PRIMARY KEY,
+  data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+ALTER TABLE public.site_content ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Lectura pública de site_content"
+  ON public.site_content FOR SELECT
+  USING (true);
+
+CREATE POLICY "Admins pueden gestionar site_content"
+  ON public.site_content FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+      AND (profiles.role = 'admin' OR lower(profiles.email) = 'sofia.tomillo@gmail.com')
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles
+      WHERE profiles.id = auth.uid()
+      AND (profiles.role = 'admin' OR lower(profiles.email) = 'sofia.tomillo@gmail.com')
+    )
+  );
+
+-- ==============================================================================
 -- FIN DEL ESQUEMA
 -- ==============================================================================

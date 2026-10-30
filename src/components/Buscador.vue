@@ -81,6 +81,7 @@
         </button>
 
         <button
+          v-if="isAdmin"
           @click="$emit('resetDatabase')"
           class="text-[#8D857B] hover:text-[#1E1B18] underline cursor-pointer text-[11px]"
           title="Restablecer los 16 registros iniciales"
@@ -94,6 +95,7 @@
 
 <script>
 import { Search, SlidersHorizontal } from 'lucide-vue-next';
+import { authService } from '../services/authService';
 
 export default {
   name: 'Buscador',
@@ -134,13 +136,21 @@ export default {
     'resetFilters',
     'resetDatabase',
   ],
+  data() {
+    return {
+      authService,
+    };
+  },
   // Propiedades computadas
   computed: {
+    isAdmin() {
+      return authService.isAdmin.value;
+    },
     hasActiveFilters() {
       return this.activeCategory !== 'todas' || this.searchQuery.trim().length > 0;
     },
     statusMessage() {
-      return `Mostrando ${this.filteredCount} de ${this.totalCount} registros en LocalStorage`;
+      return `Mostrando ${this.filteredCount} de ${this.totalCount} piezas disponibles`;
     },
   },
   // Hooks del ciclo de vida

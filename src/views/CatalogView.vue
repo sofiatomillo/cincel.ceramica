@@ -85,20 +85,21 @@
           @delete="askDelete"
         />
 
-        <!-- Tarjeta de Añadir Pieza Rápida -->
+        <!-- Tarjeta de Añadir Pieza Rápida (Exclusivo Administrador) -->
         <article
+          v-if="isAdmin"
           key="add-new-card"
           class="flex flex-col justify-between p-8 bg-[#2D2A26] text-[#FAF7F2] rounded-2xl shadow-xs border border-[#3E3832] relative overflow-hidden"
         >
           <div class="relative z-10">
             <span class="text-[10px] font-semibold tracking-[0.2em] text-[#F28482] uppercase block mb-3">
-              NUEVO REGISTRO
+              ADMINISTRACIÓN
             </span>
             <h3 class="font-serif text-3xl font-semibold text-white mb-4 leading-snug">
               ¿Quieres añadir una nueva pieza al catálogo?
             </h3>
             <p class="text-xs sm:text-sm text-[#D5CDC2] leading-relaxed mb-6">
-              Completa el formulario de alta con validación de campos para registrar un nuevo modelo en LocalStorage.
+              Completa el formulario de alta con validación de campos para registrar un nuevo modelo en la base de datos.
             </p>
           </div>
 
@@ -179,6 +180,7 @@ import {
 import { CATEGORIES } from '../data/ceramicsData';
 import { ceramicsService } from '../services/ceramicsService';
 import { cartService } from '../services/cartService';
+import { authService } from '../services/authService';
 import Buscador from '../components/Buscador.vue';
 import CardItem from '../components/CardItem.vue';
 import ModalConfirmacion from '../components/ModalConfirmacion.vue';
@@ -201,6 +203,7 @@ export default {
     return {
       ceramicsService,
       cartService,
+      authService,
       activeCategory: 'todas',
       searchQuery: '',
       sortBy: 'fecha-desc',
@@ -210,6 +213,9 @@ export default {
   },
   // Propiedades computadas requeridas
   computed: {
+    isAdmin() {
+      return authService.isAdmin.value;
+    },
     totalPiecesCount() {
       const p = ceramicsService.pieces;
       const list = Array.isArray(p) ? p : (p?.value || []);

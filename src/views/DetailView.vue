@@ -144,8 +144,8 @@
                 </button>
               </div>
 
-              <!-- Botones de administración: Editar y Eliminar registro -->
-              <div class="flex items-center gap-3 pt-2">
+              <!-- Botones de administración: Editar y Eliminar registro (solo para administradores) -->
+              <div v-if="isAdmin" class="flex items-center gap-3 pt-2">
                 <router-link
                   :to="`/piezas/editar/${piece.id}`"
                   class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FAF7F2] hover:bg-[#F3EFEA] text-[#1E1B18] text-xs font-semibold rounded-xl border border-[#E6DFD5] transition-colors"
@@ -160,7 +160,7 @@
                   class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-xl border border-red-200 transition-colors cursor-pointer"
                 >
                   <Trash2 class="w-4 h-4" />
-                  <span>Eliminar</span>
+                  <span>Eliminar registro</span>
                 </button>
               </div>
             </div>
@@ -195,6 +195,7 @@ import {
 } from 'lucide-vue-next';
 import { ceramicsService } from '../services/ceramicsService';
 import { cartService } from '../services/cartService';
+import { authService } from '../services/authService';
 import ModalConfirmacion from '../components/ModalConfirmacion.vue';
 
 export default {
@@ -216,6 +217,7 @@ export default {
   data() {
     return {
       cartService,
+      authService,
       quantity: 1,
       added: false,
       isDeleteModalOpen: false,
@@ -223,6 +225,9 @@ export default {
   },
   // Propiedades computadas requeridas
   computed: {
+    isAdmin() {
+      return authService.isAdmin.value;
+    },
     piece() {
       return ceramicsService.getById(this.$route.params.id);
     },

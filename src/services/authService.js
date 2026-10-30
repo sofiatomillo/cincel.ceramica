@@ -79,6 +79,19 @@ async function initAuth() {
       if (localAdmin) {
         try {
           const parsed = JSON.parse(localAdmin);
+          // Si el perfil o usuario tenía "Sofía Martín Tomillo", sanear a "Sofía Tomillo"
+          if (parsed?.profile?.full_name?.includes('Martín') || parsed?.user?.user_metadata?.full_name?.includes('Martín')) {
+            if (parsed.profile?.full_name) {
+              parsed.profile.full_name = parsed.profile.full_name.replace(/Martín\s*/gi, '').trim();
+            }
+            if (parsed.user?.user_metadata?.full_name) {
+              parsed.user.user_metadata.full_name = parsed.user.user_metadata.full_name.replace(/Martín\s*/gi, '').trim();
+            }
+            if (parsed.user?.user_metadata?.name) {
+              parsed.user.user_metadata.name = parsed.user.user_metadata.name.replace(/Martín\s*/gi, '').trim();
+            }
+            localStorage.setItem('cincel_admin_session', JSON.stringify(parsed));
+          }
           user.value = parsed.user;
           profile.value = parsed.profile;
         } catch {
@@ -173,15 +186,15 @@ function loginAsAdminMock() {
     id: 'admin-sofia-tomillo',
     email: ADMIN_EMAIL,
     user_metadata: {
-      full_name: 'Sofía Martín Tomillo',
-      name: 'Sofía Martín Tomillo',
+      full_name: 'Sofía Tomillo',
+      name: 'Sofía Tomillo',
       avatar_url: '',
     },
   };
   const adminProfile = {
     id: 'admin-sofia-tomillo',
     email: ADMIN_EMAIL,
-    full_name: 'Sofía Martín Tomillo',
+    full_name: 'Sofía Tomillo',
     avatar_url: '',
     role: 'admin',
   };

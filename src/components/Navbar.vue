@@ -130,16 +130,79 @@
             <ChevronDown class="w-3.5 h-3.5 text-[#8D857B] hidden sm:inline shrink-0" />
           </button>
 
-          <!-- Botón Iniciar Sesión (si no hay sesión) -->
-          <button
-            v-else
-            @click="isAuthModalOpen = true"
-            type="button"
-            class="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all shadow-2xs cursor-pointer leading-none"
-          >
-            <User class="w-4 h-4 text-[#8D857B] shrink-0" />
-            <span class="hidden sm:inline">Ingresar</span>
-          </button>
+          <!-- Dropdown Desplegable: Ingresar (Administrador o Cliente) -->
+          <div v-else class="relative" ref="loginDropdownContainer">
+            <button
+              @click="loginDropdownOpen = !loginDropdownOpen"
+              type="button"
+              class="inline-flex items-center justify-center gap-1.5 h-10 px-3.5 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] rounded-xl border border-[#E6DFD5] transition-all shadow-2xs cursor-pointer leading-none"
+              :class="{ 'border-[#F28482] ring-2 ring-[#F28482]/20': loginDropdownOpen }"
+              aria-haspopup="true"
+              :aria-expanded="loginDropdownOpen"
+            >
+              <User class="w-4 h-4 text-[#8D857B] shrink-0" />
+              <span>Ingresar</span>
+              <ChevronDown class="w-3.5 h-3.5 text-[#8D857B] shrink-0 transition-transform duration-200" :class="{ 'rotate-180': loginDropdownOpen }" />
+            </button>
+
+            <!-- Menú desplegable con 2 opciones: Administrador o Cliente -->
+            <div
+              v-if="loginDropdownOpen"
+              class="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-[#E6DFD5] p-2 z-50 animate-fade-in"
+            >
+              <div class="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#8D857B]">
+                Tipo de acceso
+              </div>
+
+              <!-- Opción 1: Administrador -->
+              <button
+                @click="openAuthModal('admin')"
+                type="button"
+                class="w-full text-left p-2.5 rounded-xl hover:bg-[#FAF7F2] transition-colors cursor-pointer flex items-start gap-2.5 group"
+              >
+                <div class="w-8 h-8 rounded-lg bg-[#F28482]/10 text-[#F28482] flex items-center justify-center shrink-0 group-hover:bg-[#F28482] group-hover:text-white transition-colors">
+                  <Shield class="w-4 h-4" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-[#1E1B18] group-hover:text-[#F28482] transition-colors">
+                      Administrador
+                    </span>
+                    <span class="text-[9px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.2 rounded font-semibold">
+                      Admin
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-[#8D857B] leading-tight mt-0.5">
+                    Gestión de catálogo, piezas y ventas
+                  </p>
+                </div>
+              </button>
+
+              <!-- Opción 2: Cliente -->
+              <button
+                @click="openAuthModal('customer')"
+                type="button"
+                class="w-full text-left p-2.5 rounded-xl hover:bg-[#FAF7F2] transition-colors cursor-pointer flex items-start gap-2.5 group"
+              >
+                <div class="w-8 h-8 rounded-lg bg-[#FAF7F2] text-[#6B655D] border border-[#E6DFD5] flex items-center justify-center shrink-0 group-hover:bg-[#1E1B18] group-hover:text-white group-hover:border-[#1E1B18] transition-colors">
+                  <User class="w-4 h-4" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-[#1E1B18] transition-colors">
+                      Cliente
+                    </span>
+                    <span class="text-[9px] bg-[#FAF7F2] text-[#8D857B] border border-[#E6DFD5] px-1.5 py-0.2 rounded font-medium">
+                      Comprador
+                    </span>
+                  </div>
+                  <p class="text-[11px] text-[#8D857B] leading-tight mt-0.5">
+                    Compras, seguimiento y pedidos
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
 
           <!-- Dropdown Menú de Usuario -->
           <div
@@ -181,6 +244,16 @@
                 <BarChart3 class="w-3.5 h-3.5 text-[#F28482]" />
                 <span>Panel de ventas y pedidos</span>
               </router-link>
+
+              <button
+                v-if="isAdmin"
+                @click.stop="openContentEditor('hero')"
+                type="button"
+                class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors text-left cursor-pointer"
+              >
+                <Edit3 class="w-3.5 h-3.5 text-[#F28482]" />
+                <span>Modificar textos e imágenes</span>
+              </button>
 
               <button
                 @click="isSqlModalOpen = true; userMenuOpen = false"
@@ -265,6 +338,16 @@
       </router-link>
 
       <button
+        v-if="isAdmin"
+        @click.stop="openContentEditor('hero')"
+        type="button"
+        class="w-full text-left py-2 text-sm font-semibold text-[#1E1B18] flex items-center gap-2 cursor-pointer"
+      >
+        <Edit3 class="w-4 h-4 text-[#F28482]" />
+        <span>Modificar textos e imágenes</span>
+      </button>
+
+      <button
         @click="mobileMenuOpen = false; isSqlModalOpen = true"
         type="button"
         class="w-full text-left py-2 text-sm font-medium text-[#2D2A26] flex items-center gap-2 cursor-pointer"
@@ -282,14 +365,35 @@
       </button>
 
       <div class="border-t border-[#E6DFD5] pt-3">
-        <button
-          v-if="!currentUser"
-          @click="mobileMenuOpen = false; isAuthModalOpen = true"
-          class="w-full text-left py-2 text-sm font-medium text-[#F28482] flex items-center gap-2 cursor-pointer"
-        >
-          <User class="w-4 h-4" />
-          <span>Iniciar sesión / Registrarse</span>
-        </button>
+        <div v-if="!currentUser" class="space-y-2">
+          <span class="block text-[10px] font-semibold uppercase tracking-wider text-[#8D857B]">
+            Ingresar como:
+          </span>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              @click="openAuthModal('admin')"
+              type="button"
+              class="w-full text-left p-2.5 rounded-xl bg-white border border-[#E6DFD5] hover:bg-[#FAF7F2] cursor-pointer flex flex-col gap-1 transition-colors"
+            >
+              <div class="flex items-center gap-1.5">
+                <Shield class="w-4 h-4 text-[#F28482]" />
+                <span class="text-xs font-semibold text-[#1E1B18]">Administrador</span>
+              </div>
+              <span class="text-[10px] text-[#8D857B]">Gestión y ventas</span>
+            </button>
+            <button
+              @click="openAuthModal('customer')"
+              type="button"
+              class="w-full text-left p-2.5 rounded-xl bg-white border border-[#E6DFD5] hover:bg-[#FAF7F2] cursor-pointer flex flex-col gap-1 transition-colors"
+            >
+              <div class="flex items-center gap-1.5">
+                <User class="w-4 h-4 text-[#8D857B]" />
+                <span class="text-xs font-semibold text-[#1E1B18]">Cliente</span>
+              </div>
+              <span class="text-[10px] text-[#8D857B]">Compras y cesta</span>
+            </button>
+          </div>
+        </div>
         <div v-else class="flex items-center justify-between py-2">
           <div class="text-xs">
             <span class="font-semibold block text-[#1E1B18]">{{ userName }}</span>
@@ -308,6 +412,7 @@
     <!-- Modales de Autenticación y Exportación SQL -->
     <AuthModal
       :isOpen="isAuthModalOpen"
+      :initialRole="authModalRole"
       @close="isAuthModalOpen = false"
     />
 
@@ -330,10 +435,12 @@ import {
   ChevronDown,
   Database,
   BarChart3,
+  Edit3,
 } from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
 import { ceramicsService } from '../services/ceramicsService';
 import { authService } from '../services/authService';
+import { siteContentService } from '../services/siteContentService';
 import AuthModal from './AuthModal.vue';
 import SqlExportModal from './SqlExportModal.vue';
 
@@ -350,6 +457,7 @@ export default {
     ChevronDown,
     Database,
     BarChart3,
+    Edit3,
     AuthModal,
     SqlExportModal,
   },
@@ -357,11 +465,15 @@ export default {
     return {
       mobileMenuOpen: false,
       userMenuOpen: false,
+      loginDropdownOpen: false,
+      authModalRole: 'customer',
       isAuthModalOpen: false,
       isSqlModalOpen: false,
       cartService,
       ceramicsService,
       authService,
+      siteContentService,
+      handleOutsideClick: null,
     };
   },
   computed: {
@@ -397,8 +509,20 @@ export default {
     },
   },
   methods: {
+    openContentEditor(section = 'hero') {
+      this.userMenuOpen = false;
+      this.mobileMenuOpen = false;
+      siteContentService.openEditor(section);
+    },
+    openAuthModal(role = 'customer') {
+      this.authModalRole = role;
+      this.loginDropdownOpen = false;
+      this.mobileMenuOpen = false;
+      this.isAuthModalOpen = true;
+    },
     async handleLogout() {
       this.userMenuOpen = false;
+      this.loginDropdownOpen = false;
       this.mobileMenuOpen = false;
       await authService.signOut();
     },
@@ -407,12 +531,20 @@ export default {
     // Hook created ejecutado en Navbar
   },
   mounted() {
-    // Cerrar menú de usuario al hacer click afuera
-    window.addEventListener('click', (e) => {
+    this.handleOutsideClick = (e) => {
+      if (this.loginDropdownOpen && !e.target.closest('[ref="loginDropdownContainer"]') && !e.target.closest('.relative')) {
+        this.loginDropdownOpen = false;
+      }
       if (this.userMenuOpen && !e.target.closest('.relative')) {
         this.userMenuOpen = false;
       }
-    });
+    };
+    window.addEventListener('click', this.handleOutsideClick);
+  },
+  beforeUnmount() {
+    if (this.handleOutsideClick) {
+      window.removeEventListener('click', this.handleOutsideClick);
+    }
   },
 };
 </script>

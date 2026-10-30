@@ -11,6 +11,7 @@
     <!-- Modales Globales -->
     <PieceModal />
     <CartDrawer />
+    <ContentEditorModal />
 
     <!-- Botón flotante para abrir cesta si hay productos -->
     <div v-if="totalCartItems > 0" class="fixed bottom-6 right-6 z-40">
@@ -32,6 +33,7 @@ import Navbar from './components/Navbar.vue';
 import Footer from './components/Footer.vue';
 import PieceModal from './components/PieceModal.vue';
 import CartDrawer from './components/CartDrawer.vue';
+import ContentEditorModal from './components/ContentEditorModal.vue';
 import { cartService } from './services/cartService';
 
 const totalCartItems = computed(() => {

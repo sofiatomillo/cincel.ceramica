@@ -1,27 +1,39 @@
 <template>
   <div class="py-10 sm:py-16 bg-[#FAF7F2] min-h-screen">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
-      <!-- Breadcrumbs -->
-      <nav class="flex items-center gap-2 text-xs text-[#8D857B]">
-        <router-link to="/" class="hover:text-[#F28482] transition-colors flex items-center gap-1">
-          <ArrowLeft class="w-3.5 h-3.5" />
-          Inicio
-        </router-link>
-        <ChevronRight class="w-3.5 h-3.5" />
-        <span class="font-semibold text-[#1E1B18]">Acerca de Cincel Cerámica</span>
-      </nav>
+      <!-- Breadcrumbs y botón de Administrador -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <nav class="flex items-center gap-2 text-xs text-[#8D857B]">
+          <router-link to="/" class="hover:text-[#F28482] transition-colors flex items-center gap-1">
+            <ArrowLeft class="w-3.5 h-3.5" />
+            Inicio
+          </router-link>
+          <ChevronRight class="w-3.5 h-3.5" />
+          <span class="font-semibold text-[#1E1B18]">Acerca de Cincel Cerámica</span>
+        </nav>
+
+        <button
+          v-if="isAdmin"
+          @click.stop="openContentEditor('aboutPage')"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#FAF7F2] text-[#F28482] border border-[#F28482]/40 rounded-xl font-semibold text-xs transition-all cursor-pointer shadow-2xs self-start sm:self-auto"
+        >
+          <Edit3 class="w-3.5 h-3.5" />
+          <span>Modificar textos e imagen de Acerca de</span>
+        </button>
+      </div>
 
       <!-- Hero Acerca de -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
         <div class="lg:col-span-7 space-y-4">
           <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[#F28482] block">
-            EL ESTUDIO & NUESTRA FILOSOFÍA
+            {{ siteContent.aboutPage.eyebrow }}
           </span>
           <h1 class="font-serif text-3xl sm:text-5xl font-semibold text-[#1E1B18] leading-tight">
-            Artesanía contemporánea con alma de barro y tiempo lento
+            {{ siteContent.aboutPage.title }}
           </h1>
-          <p class="text-base text-[#6B655D] leading-relaxed">
-            Fundado en 2020 en el corazón de Madrid, Cincel Cerámica nació de la necesidad de volver a conectar con lo tangible. Creemos que los objetos cotidianos deben guardar memoria humana, textura y emoción en lugar de perfección industrial en serie.
+          <p class="text-base text-[#6B655D] leading-relaxed whitespace-pre-line">
+            {{ siteContent.aboutPage.description }}
           </p>
           <div class="pt-4 flex items-center gap-4">
             <router-link
@@ -40,12 +52,21 @@
           </div>
         </div>
 
-        <div class="lg:col-span-5 rounded-3xl overflow-hidden shadow-xl border border-[#E6DFD5] bg-[#F3EFEA]">
+        <div class="lg:col-span-5 rounded-3xl overflow-hidden shadow-xl border border-[#E6DFD5] bg-[#F3EFEA] relative group">
           <img
-            src="/banner (1).jpg"
-            alt="Vasijas de Cincel sobre mesa de madera acanalada"
-            class="w-full aspect-square object-cover"
+            :src="siteContent.aboutPage.imageSrc"
+            :alt="siteContent.aboutPage.imageAlt || 'Acerca de Cincel Cerámica'"
+            class="w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-103"
           />
+          <button
+            v-if="isAdmin"
+            @click.stop="openContentEditor('aboutPage')"
+            type="button"
+            class="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 hover:bg-white text-[#1E1B18] text-xs font-semibold rounded-xl border border-[#E6DFD5] shadow-md flex items-center gap-1.5 cursor-pointer backdrop-blur-xs transition-transform hover:scale-105 z-20"
+          >
+            <Edit3 class="w-3.5 h-3.5 text-[#F28482]" />
+            <span>Cambiar imagen</span>
+          </button>
         </div>
       </div>
 
@@ -127,7 +148,17 @@
 </template>
 
 <script>
-import { ArrowLeft, ChevronRight, ArrowRight, Sparkles, Flame, ShieldCheck } from 'lucide-vue-next';
+import {
+  ArrowLeft,
+  ChevronRight,
+  ArrowRight,
+  Sparkles,
+  Flame,
+  ShieldCheck,
+  Edit3,
+} from 'lucide-vue-next';
+import { authService } from '../services/authService';
+import { siteContentService } from '../services/siteContentService';
 
 export default {
   name: 'AboutView',
@@ -138,9 +169,12 @@ export default {
     Sparkles,
     Flame,
     ShieldCheck,
+    Edit3,
   },
   data() {
     return {
+      authService,
+      siteContentService,
       steps: [
         {
           title: 'Amasado y desaireado',
@@ -165,12 +199,24 @@ export default {
       ],
     };
   },
-  // Hooks del ciclo de vida requeridos: created() y mounted()
+  computed: {
+    isAdmin() {
+      return authService.isAdmin.value;
+    },
+    siteContent() {
+      return siteContentService.content.value;
+    },
+  },
   created() {
     console.log('[Ciclo de Vida] AboutView creado (created hook)');
   },
   mounted() {
     console.log('[Ciclo de Vida] AboutView montado (mounted hook)');
+  },
+  methods: {
+    openContentEditor(section = 'aboutPage') {
+      siteContentService.openEditor(section);
+    },
   },
 };
 </script>

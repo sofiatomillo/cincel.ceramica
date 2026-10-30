@@ -3,10 +3,10 @@
     <Transition name="fade">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[9999] overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5"
+        class="fixed inset-0 z-[9999] overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 min-h-screen"
         @click.self="$emit('close')"
       >
-        <div class="bg-white rounded-3xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl border border-[#E6DFD5] relative flex flex-col max-h-[calc(100vh-2rem)] my-auto animate-scale-in z-[10000]">
+        <div class="bg-white rounded-3xl max-w-4xl w-full p-5 sm:p-6 shadow-2xl border border-[#E6DFD5] relative flex flex-col max-h-[92vh] m-auto animate-scale-in z-[10000]">
         <!-- Cabecera -->
         <div class="flex items-start justify-between pb-3 border-b border-[#E6DFD5]">
           <div>

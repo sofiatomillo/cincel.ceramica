@@ -2,6 +2,22 @@
   <div>
     <!-- HERO SECTION -->
     <section class="relative pt-8 pb-16 sm:py-20 lg:py-24 overflow-hidden">
+      <!-- Botón de Administrador para modificar Portada -->
+      <div v-if="isAdmin" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+        <div class="inline-flex items-center gap-2 p-1.5 px-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 shadow-2xs">
+          <span class="w-2 h-2 rounded-full bg-[#F28482] animate-pulse"></span>
+          <span class="font-semibold text-[#1E1B18]">Modo Administrador:</span>
+          <button
+            @click.stop="openContentEditor('hero')"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white hover:bg-[#FAF7F2] text-[#F28482] border border-[#F28482]/40 rounded-lg font-semibold transition-all cursor-pointer shadow-2xs"
+          >
+            <Edit3 class="w-3.5 h-3.5" />
+            <span>Modificar portada (textos, imagen y datos)</span>
+          </button>
+        </div>
+      </div>
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <!-- Lado izquierdo: Textos y llamadas a la acción -->
@@ -9,19 +25,16 @@
             <div class="inline-flex items-center gap-2 mb-4">
               <span class="w-6 h-px bg-[#F28482]" />
               <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[#F28482]">
-                PIEZAS ÚNICAS HECHAS A MANO
+                {{ siteContent.hero.eyebrow }}
               </span>
             </div>
 
-            <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.08] text-[#1E1B18] mb-6">
-              Formas simples.<br />
-              Espacios con carácter.
+            <h1 class="font-serif text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.08] text-[#1E1B18] mb-6 whitespace-pre-line">
+              {{ siteContent.hero.title }}
             </h1>
 
             <p class="text-base sm:text-lg text-[#6B655D] leading-relaxed max-w-xl mb-8">
-              Diseñamos y elaboramos piezas cerámicas contemporáneas con técnicas
-              tradicionales de torno y modelado manual. Cada objeto es una
-              celebración de la textura, el color y la imperfección natural del barro.
+              {{ siteContent.hero.description }}
             </p>
 
             <div class="flex flex-wrap items-center gap-4 mb-12">
@@ -29,14 +42,14 @@
                 to="/catalogo"
                 class="inline-flex items-center gap-2 px-6 py-3.5 bg-[#1E1B18] hover:bg-[#38342E] text-white text-sm font-medium rounded-xl shadow-sm transition-all hover:gap-3 cursor-pointer"
               >
-                <span>Ver catálogo completo ({{ totalPiecesCount }} piezas)</span>
+                <span>{{ siteContent.hero.buttonCatalogText || 'Ver catálogo completo' }} ({{ totalPiecesCount }} piezas)</span>
                 <ArrowRight class="w-4 h-4" />
               </router-link>
               <router-link
                 to="/acerca-de"
                 class="inline-flex items-center justify-center px-6 py-3.5 bg-white hover:bg-[#F3EFEA] text-[#2D2A26] border border-[#E6DFD5] text-sm font-medium rounded-xl transition-colors cursor-pointer"
               >
-                Conocer el taller
+                {{ siteContent.hero.buttonWorkshopText || 'Conocer el taller' }}
               </router-link>
             </div>
 
@@ -44,34 +57,43 @@
             <div class="grid grid-cols-3 gap-4 pt-8 border-t border-[#E6DFD5]">
               <div>
                 <strong class="block font-serif text-2xl sm:text-3xl font-semibold text-[#1E1B18]">
-                  100%
+                  {{ siteContent.hero.stat1Number }}
                 </strong>
-                <span class="text-xs text-[#6B655D]">Torno manual</span>
+                <span class="text-xs text-[#6B655D]">{{ siteContent.hero.stat1Label }}</span>
               </div>
               <div>
                 <strong class="block font-serif text-2xl sm:text-3xl font-semibold text-[#1E1B18]">
-                  1260 °C
+                  {{ siteContent.hero.stat2Number }}
                 </strong>
-                <span class="text-xs text-[#6B655D]">Gres vitrificado</span>
+                <span class="text-xs text-[#6B655D]">{{ siteContent.hero.stat2Label }}</span>
               </div>
               <div>
                 <strong class="block font-serif text-2xl sm:text-3xl font-semibold text-[#1E1B18]">
-                  0% Plomo
+                  {{ siteContent.hero.stat3Number }}
                 </strong>
-                <span class="text-xs text-[#6B655D]">Apto alimentos</span>
+                <span class="text-xs text-[#6B655D]">{{ siteContent.hero.stat3Label }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Lado derecho: Imagen Hero (banner.jpg) -->
+          <!-- Lado derecho: Imagen Hero -->
           <div class="lg:col-span-5">
             <div class="relative group rounded-2xl overflow-hidden bg-[#F3EFEA] shadow-xl border border-[#E6DFD5]">
               <img
-                :src="cartService.resolveImage(BANNER_IMAGES.hero.fileName, BANNER_IMAGES.hero.imageSrc)"
-                :alt="BANNER_IMAGES.hero.alt"
+                :src="siteContent.hero.imageSrc"
+                :alt="siteContent.hero.imageAlt || 'Hero Cincel Cerámica'"
                 class="w-full aspect-4/3 object-cover transition-transform duration-700 group-hover:scale-103"
               />
               <div class="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl pointer-events-none" />
+              <button
+                v-if="isAdmin"
+                @click.stop="openContentEditor('hero')"
+                type="button"
+                class="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 hover:bg-white text-[#1E1B18] text-xs font-semibold rounded-xl border border-[#E6DFD5] shadow-md flex items-center gap-1.5 cursor-pointer backdrop-blur-xs transition-transform hover:scale-105 z-20"
+              >
+                <Edit3 class="w-3.5 h-3.5 text-[#F28482]" />
+                <span>Cambiar imagen</span>
+              </button>
             </div>
           </div>
         </div>
@@ -135,22 +157,34 @@
     <!-- SECCIÓN SERVICIOS -->
     <section id="servicios" class="py-20 lg:py-24 bg-[#FAF7F2]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Botón de Administrador para modificar Servicios -->
+        <div v-if="isAdmin" class="mb-6 flex justify-end">
+          <button
+            @click.stop="openContentEditor('services')"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#FAF7F2] text-[#F28482] border border-[#F28482]/40 rounded-xl font-semibold text-xs transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+          >
+            <Edit3 class="w-3.5 h-3.5" />
+            <span>Modificar sección Servicios (textos, imagen y lista)</span>
+          </button>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div class="lg:col-span-7">
             <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[#F28482] block mb-2">
-              SERVICIOS A MEDIDA
+              {{ siteContent.services.eyebrow }}
             </span>
             <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1E1B18] mb-6 leading-tight">
-              Cerámica pensada para cada ocasión
+              {{ siteContent.services.title }}
             </h2>
             <p class="text-base text-[#6B655D] leading-relaxed mb-10 max-w-xl">
-              Más allá de nuestra colección habitual, ofrecemos un acompañamiento integral para dar vida a piezas que dialogan con tus espacios y momentos cotidianos.
+              {{ siteContent.services.description }}
             </p>
 
             <div class="space-y-6">
               <div
-                v-for="serv in SERVICES"
-                :key="serv.id"
+                v-for="serv in siteContent.services.items"
+                :key="serv.id || serv.number"
                 class="p-5 bg-white rounded-xl border border-[#E6DFD5] hover:border-[#D5CDC2] transition-colors"
               >
                 <div class="flex items-start gap-4">
@@ -176,15 +210,24 @@
           <div class="lg:col-span-5">
             <div class="relative group rounded-2xl overflow-hidden bg-[#F3EFEA] shadow-xl border border-[#E6DFD5]">
               <img
-                :src="cartService.resolveImage(BANNER_IMAGES.servicios.fileName, BANNER_IMAGES.servicios.imageSrc)"
-                :alt="BANNER_IMAGES.servicios.alt"
+                :src="siteContent.services.imageSrc"
+                :alt="siteContent.services.imageAlt || 'Servicios Cincel Cerámica'"
                 class="w-full aspect-16/10 object-cover transition-transform duration-700 group-hover:scale-103"
               />
-              <div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-3.5 rounded-xl border border-[#E6DFD5] shadow-xs">
+              <div v-if="siteContent.services.imageCaption" class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-3.5 rounded-xl border border-[#E6DFD5] shadow-xs">
                 <p class="text-xs font-serif font-medium text-[#1E1B18]">
-                  Servicio de mesa artesanal con detalles botánicos pintados a mano
+                  {{ siteContent.services.imageCaption }}
                 </p>
               </div>
+              <button
+                v-if="isAdmin"
+                @click.stop="openContentEditor('services')"
+                type="button"
+                class="absolute top-3 right-3 px-3 py-1.5 bg-white/95 hover:bg-white text-[#1E1B18] text-xs font-semibold rounded-xl border border-[#E6DFD5] shadow-md flex items-center gap-1.5 cursor-pointer backdrop-blur-xs transition-transform hover:scale-105 z-20"
+              >
+                <Edit3 class="w-3.5 h-3.5 text-[#F28482]" />
+                <span>Cambiar imagen</span>
+              </button>
             </div>
           </div>
         </div>
@@ -194,32 +237,53 @@
     <!-- SECCIÓN LA EMPRESA -->
     <section id="la-empresa" class="py-20 lg:py-24 bg-white border-y border-[#E6DFD5]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Botón de Administrador para modificar Empresa -->
+        <div v-if="isAdmin" class="mb-6 flex justify-end">
+          <button
+            @click.stop="openContentEditor('empresa')"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#FAF7F2] hover:bg-white text-[#F28482] border border-[#F28482]/40 rounded-xl font-semibold text-xs transition-all cursor-pointer shadow-2xs hover:shadow-xs"
+          >
+            <Edit3 class="w-3.5 h-3.5" />
+            <span>Modificar sección Sobre Nosotros (textos e imagen)</span>
+          </button>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div class="lg:col-span-5 order-2 lg:order-1">
             <div class="relative group rounded-2xl overflow-hidden bg-[#F3EFEA] shadow-xl border border-[#E6DFD5]">
               <img
-                :src="cartService.resolveImage(BANNER_IMAGES.empresa.fileName, BANNER_IMAGES.empresa.imageSrc)"
-                :alt="BANNER_IMAGES.empresa.alt"
+                :src="siteContent.empresa.imageSrc"
+                :alt="siteContent.empresa.imageAlt || 'Sobre Nosotros'"
                 class="w-full aspect-square object-cover transition-transform duration-700 group-hover:scale-103"
               />
               <div class="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl pointer-events-none" />
+              <button
+                v-if="isAdmin"
+                @click.stop="openContentEditor('empresa')"
+                type="button"
+                class="absolute bottom-3 right-3 px-3 py-1.5 bg-white/95 hover:bg-white text-[#1E1B18] text-xs font-semibold rounded-xl border border-[#E6DFD5] shadow-md flex items-center gap-1.5 cursor-pointer backdrop-blur-xs transition-transform hover:scale-105 z-20"
+              >
+                <Edit3 class="w-3.5 h-3.5 text-[#F28482]" />
+                <span>Cambiar imagen</span>
+              </button>
             </div>
           </div>
 
           <div class="lg:col-span-7 order-1 lg:order-2">
             <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[#F28482] block mb-2">
-              SOBRE NOSOTROS
+              {{ siteContent.empresa.eyebrow }}
             </span>
             <h2 class="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1E1B18] mb-6 leading-tight">
-              Artesanía contemporánea con alma de barro
+              {{ siteContent.empresa.title }}
             </h2>
 
             <p class="text-base sm:text-lg text-[#2D2A26] font-medium leading-relaxed mb-4">
-              En Cincel Cerámica creemos en el valor del tiempo lento y la nobleza del trabajo manual. Cada una de nuestras piezas se tornea y esmalta individualmente en nuestro taller.
+              {{ siteContent.empresa.lead }}
             </p>
 
             <p class="text-sm sm:text-base text-[#6B655D] leading-relaxed mb-6">
-              Trabajamos con pastas de gres de alta temperatura y lozas finas, formulando nuestros propios esmaltes para lograr matices únicos e irrepetibles que transforman el uso cotidiano en una experiencia sensorial duradera.
+              {{ siteContent.empresa.paragraph }}
             </p>
 
             <div class="mb-8">
@@ -371,10 +435,12 @@
 </template>
 
 <script>
-import { ArrowRight, CheckCircle2, ShoppingBag, Send } from 'lucide-vue-next';
+import { ArrowRight, CheckCircle2, ShoppingBag, Send, Edit3 } from 'lucide-vue-next';
 import { BANNER_IMAGES, SERVICES, STUDIO_VALUES } from '../data/ceramicsData';
 import { ceramicsService } from '../services/ceramicsService';
 import { cartService } from '../services/cartService';
+import { authService } from '../services/authService';
+import { siteContentService } from '../services/siteContentService';
 import CardItem from '../components/CardItem.vue';
 
 export default {
@@ -384,6 +450,7 @@ export default {
     CheckCircle2,
     ShoppingBag,
     Send,
+    Edit3,
     CardItem,
   },
   data() {
@@ -393,6 +460,8 @@ export default {
       STUDIO_VALUES,
       ceramicsService,
       cartService,
+      authService,
+      siteContentService,
       formSubmitted: false,
       formData: {
         name: '',
@@ -405,6 +474,12 @@ export default {
   },
   // Propiedades computadas requeridas
   computed: {
+    isAdmin() {
+      return authService.isAdmin.value;
+    },
+    siteContent() {
+      return siteContentService.content.value;
+    },
     totalPiecesCount() {
       const p = ceramicsService.pieces;
       const list = Array.isArray(p) ? p : (p?.value || []);
@@ -424,6 +499,9 @@ export default {
     console.log('[Ciclo de Vida] HomeView montado (mounted hook)');
   },
   methods: {
+    openContentEditor(section = 'hero') {
+      siteContentService.openEditor(section);
+    },
     handlePieceDelete(piece) {
       if (confirm(`¿Eliminar «${piece.title}»?`)) {
         ceramicsService.delete(piece.id);
