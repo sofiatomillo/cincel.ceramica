@@ -101,6 +101,17 @@
                 Contacto y visitas
               </router-link>
             </li>
+            <li>
+              <button
+                @click="openArrepentimiento"
+                type="button"
+                class="hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer text-left text-xs text-[#F28482] flex items-center gap-1.5"
+                title="Botón de arrepentimiento - Res. 424/2020 Secretaría de Comercio"
+              >
+                <RotateCcw class="w-3 h-3" />
+                <span>Botón de arrepentimiento</span>
+              </button>
+            </li>
           </ul>
         </div>
       </div>
@@ -114,16 +125,18 @@
 </template>
 
 <script>
-import { Edit3 } from 'lucide-vue-next';
+import { Edit3, RotateCcw } from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
 import { ceramicsService } from '../services/ceramicsService';
 import { authService } from '../services/authService';
 import { siteContentService } from '../services/siteContentService';
+import { customerOrdersService } from '../services/customerOrdersService';
 
 export default {
   name: 'Footer',
   components: {
     Edit3,
+    RotateCcw,
   },
   data() {
     return {
@@ -131,6 +144,7 @@ export default {
       ceramicsService,
       authService,
       siteContentService,
+      customerOrdersService,
     };
   },
   computed: {
@@ -153,6 +167,9 @@ export default {
   methods: {
     openContentEditor(section = 'footer') {
       siteContentService.openEditor(section);
+    },
+    openArrepentimiento() {
+      customerOrdersService.open();
     },
   },
   created() {

@@ -18,6 +18,43 @@
         </div>
       </div>
 
+      <!-- Barra de Cliente Activo en Inicio (Laura Russo) -->
+      <div v-if="isCustomer" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+        <div class="p-3.5 sm:p-4 bg-gradient-to-r from-amber-50/90 via-white to-rose-50/80 border border-amber-200/90 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-[#1E1B18] text-white flex items-center justify-center font-bold text-xs uppercase shrink-0 shadow-xs">
+              {{ customerInitial }}
+            </div>
+            <div>
+              <p class="font-semibold text-[#1E1B18]">
+                Sesión iniciada como <strong>{{ customerName }}</strong> (Cliente)
+              </p>
+              <p class="text-[11px] text-[#6B655D]">
+                Envíos cuidados a CABA · Explora piezas artesanales y gestiona tus pedidos
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              @click="cartService.isCartOpen = true"
+              type="button"
+              class="px-3 py-1.5 bg-white border border-[#E6DFD5] hover:border-[#1E1B18] text-[#1E1B18] font-medium rounded-xl flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+            >
+              <ShoppingBag class="w-3.5 h-3.5 text-[#F28482]" />
+              <span>Cesta ({{ cartTotalItems }})</span>
+            </button>
+            <button
+              @click="customerOrdersService.open()"
+              type="button"
+              class="px-3 py-1.5 bg-[#1E1B18] hover:bg-[#38342E] text-white font-medium rounded-xl flex items-center gap-1.5 shadow-2xs cursor-pointer transition-colors"
+            >
+              <Package class="w-3.5 h-3.5 text-[#F28482]" />
+              <span>Mis Pedidos</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <!-- Lado izquierdo: Textos y llamadas a la acción -->
@@ -153,6 +190,9 @@
         </div>
       </div>
     </section>
+
+    <!-- SECCIÓN DE BENEFICIOS, OFERTAS Y PROMOS -->
+    <PromosBenefitsSection variant="home" />
 
     <!-- SECCIÓN SERVICIOS -->
     <section id="servicios" class="py-20 lg:py-24 bg-[#FAF7F2]">
@@ -435,13 +475,15 @@
 </template>
 
 <script>
-import { ArrowRight, CheckCircle2, ShoppingBag, Send, Edit3 } from 'lucide-vue-next';
+import { ArrowRight, CheckCircle2, ShoppingBag, Send, Edit3, Package } from 'lucide-vue-next';
 import { BANNER_IMAGES, SERVICES, STUDIO_VALUES } from '../data/ceramicsData';
 import { ceramicsService } from '../services/ceramicsService';
 import { cartService } from '../services/cartService';
 import { authService } from '../services/authService';
 import { siteContentService } from '../services/siteContentService';
+import { customerOrdersService } from '../services/customerOrdersService';
 import CardItem from '../components/CardItem.vue';
+import PromosBenefitsSection from '../components/PromosBenefitsSection.vue';
 
 export default {
   name: 'HomeView',
@@ -451,7 +493,9 @@ export default {
     ShoppingBag,
     Send,
     Edit3,
+    Package,
     CardItem,
+    PromosBenefitsSection,
   },
   data() {
     return {
@@ -462,6 +506,7 @@ export default {
       cartService,
       authService,
       siteContentService,
+      customerOrdersService,
       formSubmitted: false,
       formData: {
         name: '',
@@ -476,6 +521,23 @@ export default {
   computed: {
     isAdmin() {
       return authService.isAdmin.value;
+    },
+    isCustomer() {
+      return authService.isCustomer.value;
+    },
+    customerName() {
+      return (
+        authService.user.value?.user_metadata?.full_name ||
+        authService.profile.value?.full_name ||
+        'Cliente'
+      );
+    },
+    customerInitial() {
+      return (this.customerName || 'L').charAt(0).toUpperCase();
+    },
+    cartTotalItems() {
+      const t = cartService.totalItems;
+      return typeof t === 'number' ? t : (t?.value || 0);
     },
     siteContent() {
       return siteContentService.content.value;

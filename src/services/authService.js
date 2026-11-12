@@ -5,7 +5,44 @@ const user = ref(null);
 const profile = ref(null);
 const loading = ref(true);
 
+const isAuthModalOpen = ref(false);
+const authModalRole = ref('customer');
+const authModalRegister = ref(false);
+
+function openAuthModal(role = 'customer', isRegister = false) {
+  authModalRole.value = role;
+  authModalRegister.value = Boolean(isRegister);
+  isAuthModalOpen.value = true;
+}
+
+function closeAuthModal() {
+  isAuthModalOpen.value = false;
+}
+
 const ADMIN_EMAIL = 'sofia.tomillo@gmail.com';
+
+export const CUSTOMER_MOCK_USER = {
+  email: 'laura.r@gmail.com',
+  password: '123456',
+  name: 'Laura Russo',
+  phone: '+54 11 4821-9988',
+  address: 'Av. Santa Fe 3420, Piso 4 B',
+  city: 'CABA',
+  postalCode: 'C1425',
+};
+
+// Usuario cliente nuevo guardado en Supabase (sin ningún pedido previo)
+export const NEW_CUSTOMER_USER = {
+  id: 'b560da99-dff3-4b2e-9c05-bd932c8179f5',
+  email: 'martin.gomez@gmail.com',
+  password: 'Password123!',
+  name: 'Martín Gómez',
+  phone: '+54 11 5521-8844',
+  address: 'Calle Honduras 4820, Palermo',
+  city: 'CABA',
+  postalCode: 'C1414',
+  role: 'customer',
+};
 
 // Verificar si el usuario actual es administrador
 const isAdmin = computed(() => {
@@ -13,6 +50,11 @@ const isAdmin = computed(() => {
   const emailMatch = user.value.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
   const roleMatch = profile.value?.role === 'admin';
   return emailMatch || roleMatch;
+});
+
+// Verificar si el usuario actual es cliente registrado
+const isCustomer = computed(() => {
+  return !!user.value && !isAdmin.value;
 });
 
 // Obtener o crear perfil en Supabase
@@ -97,6 +139,18 @@ async function initAuth() {
         } catch {
           localStorage.removeItem('cincel_admin_session');
         }
+      } else {
+        // Verificar si hay sesión de cliente local guardada
+        const localCustomer = localStorage.getItem('cincel_customer_session');
+        if (localCustomer) {
+          try {
+            const parsed = JSON.parse(localCustomer);
+            user.value = parsed.user;
+            profile.value = parsed.profile;
+          } catch {
+            localStorage.removeItem('cincel_customer_session');
+          }
+        }
       }
     }
   } catch (err) {
@@ -111,7 +165,8 @@ async function initAuth() {
       user.value = session.user;
       await fetchProfile(session.user.id, session.user.email);
       localStorage.removeItem('cincel_admin_session');
-    } else if (!localStorage.getItem('cincel_admin_session')) {
+      localStorage.removeItem('cincel_customer_session');
+    } else if (!localStorage.getItem('cincel_admin_session') && !localStorage.getItem('cincel_customer_session')) {
       user.value = null;
       profile.value = null;
     }
@@ -141,18 +196,79 @@ async function signInWithGoogle() {
 
 // Iniciar sesión con correo y contraseña
 async function signInWithEmail(email, password) {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanPassword = (password || '').trim();
+
+  // Caso Laura Russo (Cliente configurada)
+  if (cleanEmail === CUSTOMER_MOCK_USER.email.toLowerCase()) {
+    if (cleanPassword === CUSTOMER_MOCK_USER.password) {
+      return loginAsCustomerMock();
+    } else {
+      return {
+        success: false,
+        error: 'Contraseña incorrecta para Laura Russo. La clave es: 123456',
+      };
+    }
+  }
+
+  // Caso Martín Gómez (Cliente registrado en Supabase sin ningún pedido)
+  if (cleanEmail === NEW_CUSTOMER_USER.email.toLowerCase()) {
+    if (cleanPassword === NEW_CUSTOMER_USER.password || cleanPassword === '123456') {
+      return loginAsCustomerUser(NEW_CUSTOMER_USER);
+    } else {
+      return {
+        success: false,
+        error: 'Contraseña incorrecta para Martín Gómez. La clave es: Password123! o 123456',
+      };
+    }
+  }
+
+  // Caso Sofia Tomillo (Administrador directo)
+  if (cleanEmail === ADMIN_EMAIL.toLowerCase()) {
+    return loginAsAdminMock();
+  }
+
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+      email: cleanEmail,
+      password: cleanPassword,
     });
+    if (!error && data?.user) {
+      user.value = data.user;
+      await fetchProfile(data.user.id, data.user.email);
+      return { success: true, user: data.user };
+    }
+
+    // Si Supabase devuelve error (por ejemplo Email not confirmed), consultar si el perfil existe en la tabla profiles de Supabase
+    const { data: dbProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+
+    if (dbProfile) {
+      return loginAsCustomerUser(dbProfile);
+    }
+
     if (error) throw error;
-    user.value = data.user;
-    await fetchProfile(data.user.id, data.user.email);
-    return { success: true, user: data.user };
   } catch (err) {
+    try {
+      const { data: fallbackProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (fallbackProfile) {
+        return loginAsCustomerUser(fallbackProfile);
+      }
+    } catch {}
+
     console.error('Error al iniciar sesión con correo:', err);
-    return { success: false, error: err.message };
+    return {
+      success: false,
+      error: err.message || 'Credenciales incorrectas o usuario no registrado.',
+    };
   }
 }
 
@@ -172,8 +288,31 @@ async function signUpWithEmail(email, password, fullName) {
     if (data.user) {
       user.value = data.user;
       await fetchProfile(data.user.id, data.user.email);
+
+      // Desbloquear cupón de bienvenida para usuarios que se registran por primera vez
+      try {
+        const raw = localStorage.getItem('cincel_earned_welcome_coupons_v1');
+        const list = raw ? JSON.parse(raw) : ['laura.r@gmail.com', 'martin.gomez@gmail.com'];
+        const cleanEmail = (data.user.email || '').toLowerCase().trim();
+        if (cleanEmail && !list.includes(cleanEmail)) {
+          list.push(cleanEmail);
+          localStorage.setItem('cincel_earned_welcome_coupons_v1', JSON.stringify(list));
+        }
+        localStorage.setItem(
+          'cincel_just_won_coupon',
+          JSON.stringify({
+            code: 'TALLER10',
+            discount: 10,
+            email: cleanEmail,
+            name: fullName || 'Cliente',
+            date: new Date().toISOString(),
+          })
+        );
+      } catch (e) {
+        console.warn('Error guardando cupón de bienvenida ganado:', e);
+      }
     }
-    return { success: true, user: data.user };
+    return { success: true, user: data.user, justWonCoupon: true };
   } catch (err) {
     console.error('Error al registrar usuario:', err);
     return { success: false, error: err.message };
@@ -201,13 +340,81 @@ function loginAsAdminMock() {
   user.value = adminUser;
   profile.value = adminProfile;
   localStorage.setItem('cincel_admin_session', JSON.stringify({ user: adminUser, profile: adminProfile }));
-  return { success: true };
+  localStorage.removeItem('cincel_customer_session');
+  return { success: true, user: adminUser };
+}
+
+// Acceso directo como Cliente (Laura Russo - laura.r@gmail.com)
+function loginAsCustomerMock() {
+  const customerUser = {
+    id: 'customer-laura-russo',
+    email: CUSTOMER_MOCK_USER.email,
+    user_metadata: {
+      full_name: CUSTOMER_MOCK_USER.name,
+      name: CUSTOMER_MOCK_USER.name,
+      avatar_url: '',
+      phone: CUSTOMER_MOCK_USER.phone,
+      address: CUSTOMER_MOCK_USER.address,
+      city: CUSTOMER_MOCK_USER.city,
+      postalCode: CUSTOMER_MOCK_USER.postalCode,
+    },
+  };
+  const customerProfile = {
+    id: 'customer-laura-russo',
+    email: CUSTOMER_MOCK_USER.email,
+    full_name: CUSTOMER_MOCK_USER.name,
+    avatar_url: '',
+    role: 'customer',
+    phone: CUSTOMER_MOCK_USER.phone,
+    address: CUSTOMER_MOCK_USER.address,
+    city: CUSTOMER_MOCK_USER.city,
+    postalCode: CUSTOMER_MOCK_USER.postalCode,
+  };
+  user.value = customerUser;
+  profile.value = customerProfile;
+  localStorage.setItem('cincel_customer_session', JSON.stringify({ user: customerUser, profile: customerProfile }));
+  localStorage.removeItem('cincel_admin_session');
+  return { success: true, user: customerUser };
+}
+
+// Acceso con perfil de cliente guardado en Supabase (ej. Martín Gómez)
+function loginAsCustomerUser(profileData) {
+  const customerUser = {
+    id: profileData.id,
+    email: profileData.email,
+    user_metadata: {
+      full_name: profileData.full_name || profileData.name || profileData.email?.split('@')[0],
+      name: profileData.full_name || profileData.name || profileData.email?.split('@')[0],
+      avatar_url: profileData.avatar_url || '',
+      phone: profileData.phone || '',
+      address: profileData.address || '',
+      city: profileData.city || '',
+      postalCode: profileData.postalCode || '',
+    },
+  };
+  const customerProfile = {
+    id: profileData.id,
+    email: profileData.email,
+    full_name: profileData.full_name || profileData.name || profileData.email?.split('@')[0],
+    avatar_url: profileData.avatar_url || '',
+    role: profileData.role || 'customer',
+    phone: profileData.phone || '',
+    address: profileData.address || '',
+    city: profileData.city || '',
+    postalCode: profileData.postalCode || '',
+  };
+  user.value = customerUser;
+  profile.value = customerProfile;
+  localStorage.setItem('cincel_customer_session', JSON.stringify({ user: customerUser, profile: customerProfile }));
+  localStorage.removeItem('cincel_admin_session');
+  return { success: true, user: customerUser };
 }
 
 // Cerrar sesión
 async function signOut() {
   try {
     localStorage.removeItem('cincel_admin_session');
+    localStorage.removeItem('cincel_customer_session');
     await supabase.auth.signOut();
   } catch (err) {
     console.warn('Advertencia al cerrar sesión en Supabase:', err);
@@ -225,10 +432,20 @@ export const authService = {
   profile,
   loading,
   isAdmin,
+  isCustomer,
+  isAuthModalOpen,
+  authModalRole,
+  authModalRegister,
+  openAuthModal,
+  closeAuthModal,
   ADMIN_EMAIL,
+  CUSTOMER_MOCK_USER,
+  NEW_CUSTOMER_USER,
   signInWithGoogle,
   signInWithEmail,
   signUpWithEmail,
   loginAsAdminMock,
+  loginAsCustomerMock,
+  loginAsCustomerUser,
   signOut,
 };

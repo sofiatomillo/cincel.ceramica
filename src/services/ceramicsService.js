@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { INITIAL_CERAMIC_PIECES } from '../data/ceramicsData';
 import { supabase } from '../utils/supabase';
 
-const STORAGE_KEY = 'cincel_ceramics_db_v9';
+const STORAGE_KEY = 'cincel_ceramics_db_v11';
 
 export function formatARS(num) {
   const val = Math.round(Number(num) || 0);
@@ -44,7 +44,41 @@ function loadFromStorage() {
               updated = true;
             }
           }
+          if (p.id === 'taza-cafe-terrosa') {
+            if (p.category !== 'tazas' || p.categoryLabel !== 'TAZAS') {
+              p.category = 'tazas';
+              p.categoryLabel = 'TAZAS';
+              updated = true;
+            }
+            if (p.fileName !== 'annie-spratt-n42ogaQn32o-unsplash_c2e62d5a.jpg') {
+              p.fileName = 'annie-spratt-n42ogaQn32o-unsplash_c2e62d5a.jpg';
+              p.imageSrc = '/assets/aistudio/annie-spratt-n42ogaQn32o-unsplash_c2e62d5a.jpg';
+              updated = true;
+            }
+          }
         });
+
+        // Asegurar que todas las piezas de la categoría Tazas figuren en el catálogo
+        const initialTazas = INITIAL_CERAMIC_PIECES.filter((p) => p.category === 'tazas');
+        initialTazas.forEach((taza) => {
+          const idx = parsed.findIndex((p) => p.id === taza.id);
+          if (idx === -1) {
+            parsed.unshift({ ...taza });
+            updated = true;
+          } else {
+            if (parsed[idx].category !== 'tazas' || parsed[idx].categoryLabel !== 'TAZAS') {
+              parsed[idx].category = 'tazas';
+              parsed[idx].categoryLabel = 'TAZAS';
+              updated = true;
+            }
+            if (parsed[idx].fileName !== taza.fileName) {
+              parsed[idx].fileName = taza.fileName;
+              parsed[idx].imageSrc = taza.imageSrc;
+              updated = true;
+            }
+          }
+        });
+
         if (updated) {
           saveToStorage(parsed);
         }
@@ -84,7 +118,7 @@ async function syncFromSupabase() {
       const mapped = data.map((item) => ({
         id: item.id,
         category: item.category,
-        categoryLabel: item.category_label || item.category.toUpperCase(),
+        categoryLabel: item.category_label || (item.category ? item.category.toUpperCase() : 'GENERAL'),
         title: item.title,
         description: item.description,
         longDescription: item.long_description || item.description,
@@ -101,6 +135,28 @@ async function syncFromSupabase() {
         isPopular: Boolean(item.is_popular),
         createdAt: item.created_at,
       }));
+
+      // Asegurar que todas las tazas oficiales estén siempre presentes con categoría 'tazas'
+      const initialTazas = INITIAL_CERAMIC_PIECES.filter((p) => p.category === 'tazas');
+      initialTazas.forEach((taza) => {
+        const tazaIdx = mapped.findIndex((p) => p.id === taza.id);
+        if (tazaIdx !== -1) {
+          mapped[tazaIdx].category = 'tazas';
+          mapped[tazaIdx].categoryLabel = 'TAZAS';
+          mapped[tazaIdx].fileName = taza.fileName;
+          mapped[tazaIdx].imageSrc = taza.imageSrc;
+        } else {
+          mapped.unshift({ ...taza });
+        }
+      });
+
+      // Preservar piezas creadas o editadas localmente que no existan en Supabase
+      const currentLocal = pieces.value || [];
+      currentLocal.forEach((loc) => {
+        if (!mapped.some((m) => m.id === loc.id)) {
+          mapped.push(loc);
+        }
+      });
 
       pieces.value = mapped;
       saveToStorage(mapped);

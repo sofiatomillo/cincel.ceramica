@@ -269,8 +269,14 @@ export default {
         { fileName: 'tom-crew-YA2E3d7a9Wo-unsplash_dd7ed7a8.jpg', src: '/assets/aistudio/tom-crew-YA2E3d7a9Wo-unsplash_dd7ed7a8.jpg', label: 'Platos Hondos Pasta' },
         { fileName: 'evelyn-verdin-2iIEfns94pE-unsplash_bf29834f.jpg', src: '/assets/aistudio/evelyn-verdin-2iIEfns94pE-unsplash_bf29834f.jpg', label: 'Joyeros Corazón' },
         { fileName: 'cuong-duyen-ceramics-ZBG9u5KF0Wk-unsplash_321a2a38.jpg', src: '/assets/aistudio/cuong-duyen-ceramics-ZBG9u5KF0Wk-unsplash_321a2a38.jpg', label: 'Vasija Dinastía' },
+        { fileName: 'annie-spratt-n42ogaQn32o-unsplash_c2e62d5a.jpg', src: '/assets/aistudio/annie-spratt-n42ogaQn32o-unsplash_c2e62d5a.jpg', label: 'Taza Café Terrosa' },
+        { fileName: 'adam-rasheed-BGEqCc-bQHg-unsplash_e8da9bcc.jpg', src: '/assets/aistudio/adam-rasheed-BGEqCc-bQHg-unsplash_e8da9bcc.jpg', label: 'Vaso Verde Musgo' },
+        { fileName: 'aleksandra-dementeva-k3n-fZb4TH0-unsplash_c8ad20b3.jpg', src: '/assets/aistudio/aleksandra-dementeva-k3n-fZb4TH0-unsplash_c8ad20b3.jpg', label: 'Set Espresso Pasteles' },
+        { fileName: 'cafeconcetto-4fXPCj0_828-unsplash_c4482715.jpg', src: '/assets/aistudio/cafeconcetto-4fXPCj0_828-unsplash_c4482715.jpg', label: 'Taza Cónica Cupping' },
+        { fileName: 'katja-vogt-CipURjPCXOo-unsplash_6935fdf4.jpg', src: '/assets/aistudio/katja-vogt-CipURjPCXOo-unsplash_6935fdf4.jpg', label: 'Taza Geometría Terracota' },
       ],
       categorySelectOptions: [
+        { value: 'tazas', label: 'Tazas' },
         { value: 'jarrones', label: 'Jarrones' },
         { value: 'platos', label: 'Platos' },
         { value: 'decoracion', label: 'Decoración' },
@@ -279,6 +285,7 @@ export default {
         { value: 'vasijas', label: 'Vasija' },
       ],
       categoryLabels: {
+        tazas: 'TAZAS',
         jarrones: 'JARRONES',
         platos: 'PLATOS',
         decoracion: 'DECORACIÓN',

@@ -32,6 +32,57 @@
         </p>
       </div>
 
+      <!-- Banner de Bienvenida a Cliente (ej. Laura Russo) -->
+      <div
+        v-if="isCustomer"
+        class="mb-8 p-4 sm:p-5 bg-gradient-to-r from-amber-50/80 via-white to-rose-50/70 border border-amber-200/90 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div class="flex items-center gap-3.5">
+          <div class="w-11 h-11 rounded-2xl bg-[#1E1B18] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+            {{ customerInitial }}
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-serif text-base sm:text-lg font-semibold text-[#1E1B18]">
+                ¡Hola, {{ customerName }}!
+              </span>
+              <span class="text-[9px] bg-[#2E7D32]/10 text-[#2E7D32] border border-[#2E7D32]/20 font-semibold px-2 py-0.2 rounded-full">
+                Cliente Verificado
+              </span>
+            </div>
+            <p class="text-xs text-[#6B655D] mt-0.5">
+              Tu sesión está lista para comprar piezas artesanales con entrega a domicilio en CABA.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <button
+            @click="cartService.isCartOpen = true"
+            type="button"
+            class="px-3.5 py-2 bg-white border border-[#E6DFD5] hover:border-[#1E1B18] text-[#1E1B18] text-xs font-semibold rounded-xl flex items-center gap-2 cursor-pointer shadow-2xs transition-colors"
+          >
+            <ShoppingBag class="w-3.5 h-3.5 text-[#F28482]" />
+            <span>Mi Cesta ({{ cartTotalItems }})</span>
+          </button>
+
+          <button
+            @click="customerOrdersService.open()"
+            type="button"
+            class="px-3.5 py-2 bg-[#1E1B18] hover:bg-[#38342E] text-white text-xs font-semibold rounded-xl flex items-center gap-2 cursor-pointer shadow-xs transition-colors"
+          >
+            <Package class="w-3.5 h-3.5 text-[#F28482]" />
+            <span>Mis Compras & Pedidos</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE BENEFICIOS, OFERTAS Y PROMOS -->
+      <PromosBenefitsSection
+        variant="catalog"
+        @selectCategory="handleSelectCategory"
+      />
+
       <!-- Componente Reutilizable: Buscador -->
       <Buscador
         v-model:searchQuery="searchQuery"
@@ -176,14 +227,17 @@ import {
   Sparkles,
   ShieldCheck,
   Plus,
+  ShoppingBag,
 } from 'lucide-vue-next';
 import { CATEGORIES } from '../data/ceramicsData';
 import { ceramicsService } from '../services/ceramicsService';
 import { cartService } from '../services/cartService';
 import { authService } from '../services/authService';
+import { customerOrdersService } from '../services/customerOrdersService';
 import Buscador from '../components/Buscador.vue';
 import CardItem from '../components/CardItem.vue';
 import ModalConfirmacion from '../components/ModalConfirmacion.vue';
+import PromosBenefitsSection from '../components/PromosBenefitsSection.vue';
 
 export default {
   name: 'CatalogView',
@@ -195,15 +249,18 @@ export default {
     Sparkles,
     ShieldCheck,
     Plus,
+    ShoppingBag,
     Buscador,
     CardItem,
     ModalConfirmacion,
+    PromosBenefitsSection,
   },
   data() {
     return {
       ceramicsService,
       cartService,
       authService,
+      customerOrdersService,
       activeCategory: 'todas',
       searchQuery: '',
       sortBy: 'fecha-desc',
@@ -215,6 +272,23 @@ export default {
   computed: {
     isAdmin() {
       return authService.isAdmin.value;
+    },
+    isCustomer() {
+      return authService.isCustomer.value;
+    },
+    customerName() {
+      return (
+        authService.user.value?.user_metadata?.full_name ||
+        authService.profile.value?.full_name ||
+        'Cliente'
+      );
+    },
+    customerInitial() {
+      return (this.customerName || 'L').charAt(0).toUpperCase();
+    },
+    cartTotalItems() {
+      const t = cartService.totalItems;
+      return typeof t === 'number' ? t : (t?.value || 0);
     },
     totalPiecesCount() {
       const p = ceramicsService.pieces;
@@ -289,12 +363,29 @@ export default {
   },
   mounted() {
     console.log('[Ciclo de Vida] CatalogView montado (mounted hook)');
+    const qCat = this.$route.query.categoria || this.$route.query.cat;
+    if (qCat && CATEGORIES.some((c) => c.id === qCat)) {
+      this.activeCategory = qCat;
+    }
+  },
+  watch: {
+    '$route.query'(newQuery) {
+      const qCat = newQuery?.categoria || newQuery?.cat;
+      if (qCat && CATEGORIES.some((c) => c.id === qCat)) {
+        this.activeCategory = qCat;
+      }
+    },
   },
   methods: {
     resetFilters() {
       this.activeCategory = 'todas';
       this.searchQuery = '';
       this.sortBy = 'fecha-desc';
+    },
+
+    handleSelectCategory(catId) {
+      this.activeCategory = catId;
+      this.searchQuery = '';
     },
 
     askDelete(piece) {

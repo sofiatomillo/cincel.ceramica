@@ -110,8 +110,17 @@
               <span class="font-mono text-xs font-bold text-[#1E1B18] bg-[#FAF7F2] px-3 py-1 rounded-lg border border-[#E6DFD5]">
                 {{ sale.id }}
               </span>
-              <span class="text-xs font-medium text-[#2E7D32] bg-[#E8F5E9] px-2.5 py-0.5 rounded-full">
-                {{ sale.status || 'Completado' }}
+              <span
+                class="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                :class="sale.status === 'cancelado' ? 'text-rose-800 bg-rose-100 border border-rose-200' : 'text-[#2E7D32] bg-[#E8F5E9]'"
+              >
+                {{ sale.status === 'cancelado' ? 'Cancelado (Arrepentimiento)' : (sale.status === 'en_camino' ? 'Embalaje y Despacho' : (sale.status || 'Completado')) }}
+              </span>
+              <span
+                v-if="sale.cancellation_code"
+                class="font-mono text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200"
+              >
+                #{{ sale.cancellation_code }}
               </span>
             </div>
 
@@ -238,7 +247,9 @@ export default {
       return this.salesList.length;
     },
     totalRevenue() {
-      return this.salesList.reduce((acc, s) => acc + Number(s.total_amount || 0), 0);
+      return this.salesList
+        .filter((s) => s.status !== 'cancelado')
+        .reduce((acc, s) => acc + Number(s.total_amount || 0), 0);
     },
     formattedTotalRevenue() {
       return this.formatARS(this.totalRevenue);

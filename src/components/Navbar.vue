@@ -96,6 +96,18 @@
           <span>Nueva Pieza</span>
         </router-link>
 
+        <!-- Botón Mis Pedidos (Cliente como Laura Russo) -->
+        <button
+          v-if="isCustomer"
+          @click="openCustomerOrdersModal"
+          type="button"
+          class="hidden sm:inline-flex items-center justify-center gap-1.5 h-10 px-3.5 text-xs font-medium text-[#1E1B18] bg-white hover:bg-[#F3EFEA] border border-[#E6DFD5] rounded-xl shadow-2xs transition-all cursor-pointer leading-none"
+          title="Ver mis pedidos realizados"
+        >
+          <Package class="w-4 h-4 text-[#F28482]" />
+          <span>Mis Pedidos</span>
+        </button>
+
         <!-- Menú de Usuario / Autenticación -->
         <div class="relative flex items-center">
           <button
@@ -225,35 +237,70 @@
             </div>
 
             <div class="py-1">
-              <router-link
-                v-if="isAdmin"
-                to="/piezas/nueva"
-                @click="userMenuOpen = false"
-                class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
-              >
-                <Plus class="w-3.5 h-3.5 text-[#F28482]" />
-                <span>+ Crear nueva pieza</span>
-              </router-link>
+              <!-- Opciones exclusivas de Administrador -->
+              <template v-if="isAdmin">
+                <router-link
+                  to="/piezas/nueva"
+                  @click="userMenuOpen = false"
+                  class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
+                >
+                  <Plus class="w-3.5 h-3.5 text-[#F28482]" />
+                  <span>+ Crear nueva pieza</span>
+                </router-link>
 
-              <router-link
-                v-if="isAdmin"
-                to="/ventas"
-                @click="userMenuOpen = false"
-                class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
-              >
-                <BarChart3 class="w-3.5 h-3.5 text-[#F28482]" />
-                <span>Panel de ventas y pedidos</span>
-              </router-link>
+                <router-link
+                  to="/ventas"
+                  @click="userMenuOpen = false"
+                  class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
+                >
+                  <BarChart3 class="w-3.5 h-3.5 text-[#F28482]" />
+                  <span>Panel de ventas y pedidos</span>
+                </router-link>
 
-              <button
-                v-if="isAdmin"
-                @click.stop="openContentEditor('hero')"
-                type="button"
-                class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors text-left cursor-pointer"
-              >
-                <Edit3 class="w-3.5 h-3.5 text-[#F28482]" />
-                <span>Modificar textos e imágenes</span>
-              </button>
+                <button
+                  @click.stop="openContentEditor('hero')"
+                  type="button"
+                  class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors text-left cursor-pointer"
+                >
+                  <Edit3 class="w-3.5 h-3.5 text-[#F28482]" />
+                  <span>Modificar textos e imágenes</span>
+                </button>
+              </template>
+
+              <!-- Opciones para Cliente (como Laura Russo) -->
+              <template v-else>
+                <router-link
+                  to="/catalogo"
+                  @click="userMenuOpen = false"
+                  class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
+                >
+                  <ShoppingBag class="w-3.5 h-3.5 text-[#F28482]" />
+                  <span>Explorar Catálogo y Comprar</span>
+                </router-link>
+
+                <button
+                  @click="openCustomerOrdersModal"
+                  type="button"
+                  class="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors text-left cursor-pointer"
+                >
+                  <Package class="w-3.5 h-3.5 text-[#F28482]" />
+                  <span>Mis Compras y Pedidos</span>
+                </button>
+
+                <button
+                  @click="openCartDrawer"
+                  type="button"
+                  class="w-full flex items-center justify-between px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors text-left cursor-pointer"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <ShoppingBag class="w-3.5 h-3.5 text-[#8D857B]" />
+                    <span>Mi Cesta de Compras</span>
+                  </div>
+                  <span class="text-[10px] bg-[#F28482] text-white font-bold px-1.5 py-0.2 rounded-full">
+                    {{ totalCartItems }}
+                  </span>
+                </button>
+              </template>
 
               <button
                 @click="isSqlModalOpen = true; userMenuOpen = false"
@@ -357,6 +404,16 @@
       </button>
 
       <button
+        v-if="isCustomer"
+        @click="openCustomerOrdersModal"
+        type="button"
+        class="w-full text-left py-2 text-sm font-semibold text-[#1E1B18] flex items-center gap-2 cursor-pointer"
+      >
+        <Package class="w-4 h-4 text-[#F28482]" />
+        <span>Mis Compras y Pedidos</span>
+      </button>
+
+      <button
         @click="mobileMenuOpen = false; cartService.isCartOpen = true"
         class="w-full text-left py-2 text-sm font-medium text-[#1E1B18] flex items-center gap-2 cursor-pointer border-t border-[#E6DFD5] pt-3"
       >
@@ -409,11 +466,12 @@
       </div>
     </div>
 
-    <!-- Modales de Autenticación y Exportación SQL -->
+    <!-- Modales de Autenticación, Pedidos y Exportación SQL -->
     <AuthModal
       :isOpen="isAuthModalOpen"
-      :initialRole="authModalRole"
-      @close="isAuthModalOpen = false"
+      :initialRole="currentAuthModalRole"
+      :initialRegister="currentAuthModalRegister"
+      @close="closeAuthModal"
     />
 
     <SqlExportModal
@@ -436,11 +494,13 @@ import {
   Database,
   BarChart3,
   Edit3,
+  Package,
 } from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
 import { ceramicsService } from '../services/ceramicsService';
 import { authService } from '../services/authService';
 import { siteContentService } from '../services/siteContentService';
+import { customerOrdersService } from '../services/customerOrdersService';
 import AuthModal from './AuthModal.vue';
 import SqlExportModal from './SqlExportModal.vue';
 
@@ -458,6 +518,7 @@ export default {
     Database,
     BarChart3,
     Edit3,
+    Package,
     AuthModal,
     SqlExportModal,
   },
@@ -467,16 +528,26 @@ export default {
       userMenuOpen: false,
       loginDropdownOpen: false,
       authModalRole: 'customer',
-      isAuthModalOpen: false,
+      localAuthModalOpen: false,
       isSqlModalOpen: false,
       cartService,
       ceramicsService,
       authService,
       siteContentService,
+      customerOrdersService,
       handleOutsideClick: null,
     };
   },
   computed: {
+    isAuthModalOpen() {
+      return Boolean(this.localAuthModalOpen || authService.isAuthModalOpen.value);
+    },
+    currentAuthModalRole() {
+      return authService.authModalRole.value || this.authModalRole || 'customer';
+    },
+    currentAuthModalRegister() {
+      return Boolean(authService.authModalRegister.value);
+    },
     totalCount() {
       const p = ceramicsService.pieces;
       const list = Array.isArray(p) ? p : (p?.value || []);
@@ -491,6 +562,12 @@ export default {
     },
     isAdmin() {
       return authService.isAdmin.value;
+    },
+    isCustomer() {
+      return authService.isCustomer.value;
+    },
+    customerOrdersCount() {
+      return customerOrdersService.customerOrders.value?.length || 0;
     },
     userName() {
       const u = authService.user.value;
@@ -509,16 +586,30 @@ export default {
     },
   },
   methods: {
+    openCustomerOrdersModal() {
+      this.userMenuOpen = false;
+      this.mobileMenuOpen = false;
+      customerOrdersService.open();
+    },
+    openCartDrawer() {
+      this.userMenuOpen = false;
+      this.mobileMenuOpen = false;
+      cartService.isCartOpen = true;
+    },
     openContentEditor(section = 'hero') {
       this.userMenuOpen = false;
       this.mobileMenuOpen = false;
       siteContentService.openEditor(section);
     },
-    openAuthModal(role = 'customer') {
-      this.authModalRole = role;
+    openAuthModal(role = 'customer', isRegister = false) {
       this.loginDropdownOpen = false;
       this.mobileMenuOpen = false;
-      this.isAuthModalOpen = true;
+      this.localAuthModalOpen = true;
+      authService.openAuthModal(role, isRegister);
+    },
+    closeAuthModal() {
+      this.localAuthModalOpen = false;
+      authService.closeAuthModal();
     },
     async handleLogout() {
       this.userMenuOpen = false;

@@ -57,17 +57,29 @@
             ¡Pedido realizado con éxito!
           </h4>
           <p class="text-xs text-[#6B655D] max-w-xs mx-auto">
-            Hemos recibido tu compra correctamente. Te enviaremos un correo a <strong>{{ customer.email || 'tu email' }}</strong> con el seguimiento del paquete.
+            Hemos recibido tu compra correctamente, <strong>{{ customer.name }}</strong>. Te enviamos la confirmación a <strong>{{ customer.email || 'tu email' }}</strong>.
           </p>
           <div class="p-3 bg-white border border-[#E6DFD5] rounded-xl text-xs font-mono text-[#1E1B18]">
             Número de pedido: <strong>{{ orderNumber }}</strong>
           </div>
-          <button
-            @click="handleFinish"
-            class="w-full py-3 bg-[#1E1B18] hover:bg-[#38342E] text-white text-xs font-medium rounded-xl transition-colors cursor-pointer"
-          >
-            Volver a la tienda
-          </button>
+
+          <div class="space-y-2 pt-2">
+            <button
+              @click="viewMyOrders"
+              type="button"
+              class="w-full py-3 bg-[#F28482] hover:bg-[#E06F6D] text-white text-xs font-semibold rounded-xl shadow-xs transition-colors cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Package class="w-4 h-4" />
+              <span>Ver Mis Pedidos y Seguimiento</span>
+            </button>
+            <button
+              @click="handleFinish"
+              type="button"
+              class="w-full py-2.5 bg-white border border-[#E6DFD5] hover:bg-[#FAF7F2] text-[#1E1B18] text-xs font-medium rounded-xl transition-colors cursor-pointer"
+            >
+              Volver a la tienda
+            </button>
+          </div>
         </div>
 
         <!-- Formulario de Checkout -->
@@ -83,6 +95,22 @@
             </button>
           </div>
 
+          <!-- Banner de Cliente Identificado -->
+          <div v-if="isLoggedInCustomer" class="p-3 bg-[#FAF7F2] border border-amber-200/80 rounded-xl text-xs flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-full bg-[#1E1B18] text-white flex items-center justify-center font-bold text-xs uppercase shrink-0">
+                {{ userInitial }}
+              </div>
+              <div class="leading-tight">
+                <span class="font-semibold text-[#1E1B18] block">{{ customer.name }}</span>
+                <span class="text-[10px] text-[#6B655D]">{{ customer.email }}</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-semibold bg-[#2E7D32]/10 text-[#2E7D32] px-2 py-0.5 rounded-full shrink-0">
+              ✓ Cliente lista
+            </span>
+          </div>
+
           <div>
             <label class="block text-[11px] font-semibold text-[#6B655D] mb-1">
               Nombre y apellidos *
@@ -91,7 +119,7 @@
               type="text"
               required
               v-model="customer.name"
-              placeholder="Ej. Sofía Tomillo"
+              placeholder="Ej. Laura Russo"
               class="w-full px-3 py-2 bg-white border border-[#E6DFD5] rounded-lg focus:outline-none focus:border-[#F28482]"
             />
           </div>
@@ -280,10 +308,67 @@
 
       <!-- Footer del carrito -->
       <div v-if="!orderCompleted && !isCheckingOut && cartService.cart.length > 0" class="p-6 bg-white border-t border-[#E6DFD5] space-y-3">
+        <!-- Bloque de Cupón de Bienvenida -->
+        <div class="py-2.5 border-y border-[#E6DFD5] space-y-2">
+          <!-- Si ya está aplicado -->
+          <div v-if="appliedCoupon" class="flex items-center justify-between p-2.5 bg-green-50 rounded-xl border border-green-200 text-xs">
+            <div class="flex items-center gap-2 text-green-900 font-medium">
+              <Tag class="w-3.5 h-3.5 text-green-600 shrink-0" />
+              <span>Cupón <strong>{{ appliedCoupon }}</strong> (10% OFF)</span>
+            </div>
+            <button
+              @click="removeCoupon"
+              type="button"
+              class="text-[#8D857B] hover:text-rose-600 p-1 cursor-pointer transition-colors"
+              title="Quitar cupón"
+            >
+              <X class="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <!-- Si aún no se aplicó -->
+          <div v-else class="space-y-1.5">
+            <div class="flex gap-2">
+              <input
+                v-model="couponInput"
+                type="text"
+                placeholder="Ingresar cupón (ej. TALLER10)"
+                class="flex-1 px-3 py-1.5 text-xs uppercase bg-[#FAF7F2] border border-[#E6DFD5] rounded-xl focus:outline-none focus:border-[#F28482]"
+                @keyup.enter="applyCouponCode"
+              />
+              <button
+                @click="applyCouponCode"
+                type="button"
+                class="px-3.5 py-1.5 bg-[#1E1B18] hover:bg-[#38342E] text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0"
+              >
+                Aplicar
+              </button>
+            </div>
+
+            <!-- Mensaje de estado o invitación a registrarse para ganar el cupón -->
+            <div v-if="couponMessage" class="text-[11px] leading-snug" :class="couponError ? 'text-rose-600' : 'text-green-700'">
+              <p>{{ couponMessage }}</p>
+              <button
+                v-if="couponError && !isLoggedInCustomer"
+                @click="openRegisterForCoupon"
+                type="button"
+                class="text-xs font-semibold text-[#F28482] underline hover:text-[#E06F6D] mt-1 inline-flex items-center gap-1 cursor-pointer"
+              >
+                <span>Crear cuenta gratis para ganarlo</span>
+                <ArrowRight class="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="space-y-1.5 text-xs">
           <div class="flex justify-between text-[#6B655D]">
             <span>Subtotal</span>
             <span class="font-medium text-[#1E1B18]">{{ cartService.formatARS(cartSubtotal) }}</span>
+          </div>
+          <div v-if="discountAmount > 0" class="flex justify-between text-[#2E7D32]">
+            <span>Descuento ({{ appliedCoupon }})</span>
+            <span class="font-semibold">- {{ cartService.formatARS(discountAmount) }}</span>
           </div>
           <div class="flex justify-between text-[#6B655D]">
             <span>Envío</span>
@@ -316,9 +401,12 @@
 </template>
 
 <script>
-import { X, Trash2, ShoppingBag, ArrowRight, ShieldCheck, Truck, Check } from 'lucide-vue-next';
+import { X, Trash2, ShoppingBag, ArrowRight, ShieldCheck, Truck, Check, Package, Tag } from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
 import { salesService } from '../services/salesService';
+import { authService } from '../services/authService';
+import { customerOrdersService } from '../services/customerOrdersService';
+import { couponService } from '../services/couponService';
 
 export default {
   name: 'CartDrawer',
@@ -330,10 +418,18 @@ export default {
     ShieldCheck,
     Truck,
     Check,
+    Package,
+    Tag,
   },
   data() {
     return {
       cartService,
+      authService,
+      customerOrdersService,
+      couponService,
+      couponInput: '',
+      couponMessage: '',
+      couponError: false,
       isCheckingOut: false,
       orderCompleted: false,
       orderNumber: '',
@@ -362,21 +458,71 @@ export default {
       const sub = this.cartSubtotal;
       return sub >= this.freeShippingThreshold || sub === 0 ? 0 : 5500;
     },
+    discountAmount() {
+      return couponService.calculateDiscount(this.cartSubtotal);
+    },
+    appliedCoupon() {
+      return couponService.appliedCoupon.value;
+    },
     total() {
-      return this.cartSubtotal + this.shippingCost;
+      return Math.max(0, this.cartSubtotal - this.discountAmount + this.shippingCost);
     },
     remainingForFreeShipping() {
       return Math.max(0, this.freeShippingThreshold - this.cartSubtotal);
     },
+    isLoggedInCustomer() {
+      return authService.isCustomer.value;
+    },
+    userInitial() {
+      const name = this.customer.name || 'L';
+      return name.charAt(0).toUpperCase();
+    },
   },
-  // Hooks del ciclo de vida requeridos: created() y mounted()
+  watch: {
+    'cartService.isCartOpen'(isOpen) {
+      if (isOpen) {
+        this.prefillCustomerData();
+      }
+    },
+    isCheckingOut(isCheckout) {
+      if (isCheckout) {
+        this.prefillCustomerData();
+      }
+    },
+    'authService.user.value'() {
+      this.prefillCustomerData();
+    },
+  },
   created() {
-    // Hook created ejecutado en CartDrawer
+    this.prefillCustomerData();
   },
   mounted() {
-    // Hook mounted ejecutado en CartDrawer
+    this.prefillCustomerData();
   },
   methods: {
+    prefillCustomerData() {
+      const u = authService.user.value;
+      if (u) {
+        this.customer.name =
+          u.user_metadata?.full_name ||
+          u.user_metadata?.name ||
+          authService.profile.value?.full_name ||
+          (u.email ? u.email.split('@')[0] : '');
+        this.customer.email = u.email || '';
+        this.customer.address =
+          u.user_metadata?.address ||
+          authService.profile.value?.address ||
+          '';
+        this.customer.city =
+          u.user_metadata?.city ||
+          authService.profile.value?.city ||
+          'CABA';
+        this.customer.postalCode =
+          u.user_metadata?.postalCode ||
+          authService.profile.value?.postalCode ||
+          '';
+      }
+    },
     async handleCheckoutSubmit() {
       this.orderNumber = `CIN-${Math.floor(100000 + Math.random() * 900000)}`;
       
@@ -390,11 +536,40 @@ export default {
 
       this.orderCompleted = true;
     },
+    viewMyOrders() {
+      this.handleFinish();
+      customerOrdersService.open();
+    },
     handleFinish() {
       cartService.clearCart();
+      couponService.removeCoupon();
+      this.couponMessage = '';
+      this.couponError = false;
       this.orderCompleted = false;
       this.isCheckingOut = false;
       cartService.isCartOpen = false;
+    },
+    applyCouponCode() {
+      this.couponMessage = '';
+      this.couponError = false;
+      const res = couponService.applyCoupon(this.couponInput);
+      if (!res.success) {
+        this.couponError = true;
+        this.couponMessage = res.error;
+      } else {
+        this.couponError = false;
+        this.couponMessage = res.message;
+        this.couponInput = '';
+      }
+    },
+    removeCoupon() {
+      couponService.removeCoupon();
+      this.couponMessage = '';
+      this.couponError = false;
+    },
+    openRegisterForCoupon() {
+      cartService.isCartOpen = false;
+      authService.openAuthModal('customer', true);
     },
   },
 };
