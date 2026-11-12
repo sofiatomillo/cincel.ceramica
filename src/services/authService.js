@@ -44,12 +44,35 @@ export const NEW_CUSTOMER_USER = {
   role: 'customer',
 };
 
+// Usuaria creadora guardada en la base de datos de Supabase que ha creado una pieza
+export const CREATOR_USER = {
+  id: '884070cb-f48d-4ee8-a77a-1e54087320b0',
+  email: 'camila.torres@gmail.com',
+  password: 'Password123!',
+  name: 'Camila Torres',
+  phone: '+54 11 3912-7722',
+  address: 'Defensa 832, San Telmo',
+  city: 'CABA',
+  postalCode: 'C1065',
+  role: 'creator',
+  roleLabel: 'Ceramista Creadora',
+  bio: 'Ceramista artesana de Cincel Estudio. Especializada en torneado manual en torno alfarero con gres mineral y esmaltes reactivos.',
+  createdPieceId: 'vaso-termico-verde-musgo',
+  createdPieceTitle: 'Vaso Cerámico Verde Musgo',
+};
+
 // Verificar si el usuario actual es administrador
 const isAdmin = computed(() => {
   if (!user.value) return false;
   const emailMatch = user.value.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
   const roleMatch = profile.value?.role === 'admin';
   return emailMatch || roleMatch;
+});
+
+// Verificar si el usuario actual es la creadora de piezas
+const isCreator = computed(() => {
+  if (!user.value) return false;
+  return profile.value?.role === 'creator' || user.value?.email?.toLowerCase() === CREATOR_USER.email.toLowerCase();
 });
 
 // Verificar si el usuario actual es cliente registrado
@@ -219,6 +242,18 @@ async function signInWithEmail(email, password) {
       return {
         success: false,
         error: 'Contraseña incorrecta para Martín Gómez. La clave es: Password123! o 123456',
+      };
+    }
+  }
+
+  // Caso Camila Torres (Usuaria Creadora de pieza guardada en Supabase)
+  if (cleanEmail === CREATOR_USER.email.toLowerCase()) {
+    if (cleanPassword === CREATOR_USER.password || cleanPassword === '123456') {
+      return loginAsCreatorMock();
+    } else {
+      return {
+        success: false,
+        error: 'Contraseña incorrecta para Camila Torres. La clave es: Password123! o 123456',
       };
     }
   }
@@ -410,6 +445,45 @@ function loginAsCustomerUser(profileData) {
   return { success: true, user: customerUser };
 }
 
+// Acceso directo como Usuaria Creadora (Camila Torres)
+function loginAsCreatorMock() {
+  const creatorUser = {
+    id: CREATOR_USER.id,
+    email: CREATOR_USER.email,
+    user_metadata: {
+      full_name: CREATOR_USER.name,
+      name: CREATOR_USER.name,
+      role: 'creator',
+      avatar_url: '',
+      phone: CREATOR_USER.phone,
+      address: CREATOR_USER.address,
+      city: CREATOR_USER.city,
+      postalCode: CREATOR_USER.postalCode,
+      createdPieceId: CREATOR_USER.createdPieceId,
+      createdPieceTitle: CREATOR_USER.createdPieceTitle,
+    },
+  };
+  const creatorProfile = {
+    id: CREATOR_USER.id,
+    email: CREATOR_USER.email,
+    full_name: CREATOR_USER.name,
+    avatar_url: '',
+    role: 'creator',
+    phone: CREATOR_USER.phone,
+    address: CREATOR_USER.address,
+    city: CREATOR_USER.city,
+    postalCode: CREATOR_USER.postalCode,
+    bio: CREATOR_USER.bio,
+    createdPieceId: CREATOR_USER.createdPieceId,
+    createdPieceTitle: CREATOR_USER.createdPieceTitle,
+  };
+  user.value = creatorUser;
+  profile.value = creatorProfile;
+  localStorage.setItem('cincel_customer_session', JSON.stringify({ user: creatorUser, profile: creatorProfile }));
+  localStorage.removeItem('cincel_admin_session');
+  return { success: true, user: creatorUser };
+}
+
 // Cerrar sesión
 async function signOut() {
   try {
@@ -433,6 +507,7 @@ export const authService = {
   loading,
   isAdmin,
   isCustomer,
+  isCreator,
   isAuthModalOpen,
   authModalRole,
   authModalRegister,
@@ -441,11 +516,13 @@ export const authService = {
   ADMIN_EMAIL,
   CUSTOMER_MOCK_USER,
   NEW_CUSTOMER_USER,
+  CREATOR_USER,
   signInWithGoogle,
   signInWithEmail,
   signUpWithEmail,
   loginAsAdminMock,
   loginAsCustomerMock,
   loginAsCustomerUser,
+  loginAsCreatorMock,
   signOut,
 };

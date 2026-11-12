@@ -205,10 +205,73 @@
             </div>
           </div>
 
+          <!-- Opción de Uso de Cupón en Checkout -->
+          <div v-if="hasCouponAvailable" class="p-3.5 bg-amber-50/70 border border-amber-200/90 rounded-xl space-y-2.5">
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-1.5 font-semibold text-[#1E1B18]">
+                <Tag class="w-4 h-4 text-[#F28482]" />
+                <span>Cupón disponible: <strong class="text-[#F28482]">TALLER10</strong> (10% OFF)</span>
+              </div>
+              <span class="text-[10px] bg-[#2E7D32]/10 text-[#2E7D32] font-bold px-2 py-0.5 rounded-full">
+                Disponible
+              </span>
+            </div>
+
+            <p class="text-[11px] text-[#6B655D] leading-tight">
+              ¿Deseas aplicar tu descuento en esta compra o reservarlo para tu próximo pedido?
+            </p>
+
+            <div class="space-y-1.5 pt-0.5">
+              <label
+                class="flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-colors"
+                :class="useCouponInOrder ? 'bg-white border-[#F28482] shadow-2xs text-[#1E1B18]' : 'bg-white/60 border-[#E6DFD5] text-[#6B655D] hover:bg-white'"
+              >
+                <input
+                  type="radio"
+                  :value="true"
+                  v-model="useCouponInOrder"
+                  class="accent-[#F28482]"
+                />
+                <div class="text-xs">
+                  <span class="font-medium text-[#1E1B18]">Usar mi cupón en esta compra</span>
+                  <span class="text-[11px] text-[#2E7D32] block font-semibold">
+                    - {{ cartService.formatARS(potentialDiscount) }} de ahorro
+                  </span>
+                </div>
+              </label>
+
+              <label
+                class="flex items-center gap-2.5 p-2 rounded-lg border cursor-pointer transition-colors"
+                :class="!useCouponInOrder ? 'bg-white border-[#1E1B18] shadow-2xs text-[#1E1B18]' : 'bg-white/60 border-[#E6DFD5] text-[#6B655D] hover:bg-white'"
+              >
+                <input
+                  type="radio"
+                  :value="false"
+                  v-model="useCouponInOrder"
+                  class="accent-[#F28482]"
+                />
+                <div class="text-xs">
+                  <span class="font-medium text-[#1E1B18]">No usar en este pedido</span>
+                  <span class="text-[10px] text-[#8D857B] block">
+                    Conservar el cupón intacto para mi próxima compra
+                  </span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <div class="p-3 bg-white border border-[#E6DFD5] rounded-xl space-y-1 pt-2">
             <div class="flex justify-between text-xs text-[#6B655D]">
               <span>Subtotal piezas</span>
               <span>{{ cartService.formatARS(cartSubtotal) }}</span>
+            </div>
+            <div v-if="discountAmount > 0" class="flex justify-between text-xs text-[#2E7D32] font-medium">
+              <span>Descuento aplicado (10% OFF)</span>
+              <span>- {{ cartService.formatARS(discountAmount) }}</span>
+            </div>
+            <div v-else-if="hasCouponAvailable && !useCouponInOrder" class="flex justify-between text-[11px] text-[#8D857B] italic">
+              <span>Descuento cupón:</span>
+              <span>Reservado para la próxima compra</span>
             </div>
             <div class="flex justify-between text-xs text-[#6B655D]">
               <span>Gastos de envío</span>
@@ -309,24 +372,54 @@
       <!-- Footer del carrito -->
       <div v-if="!orderCompleted && !isCheckingOut && cartService.cart.length > 0" class="p-6 bg-white border-t border-[#E6DFD5] space-y-3">
         <!-- Bloque de Cupón de Bienvenida -->
+        <!-- Bloque de Cupón de Bienvenida / Descuentos -->
         <div class="py-2.5 border-y border-[#E6DFD5] space-y-2">
-          <!-- Si ya está aplicado -->
-          <div v-if="appliedCoupon" class="flex items-center justify-between p-2.5 bg-green-50 rounded-xl border border-green-200 text-xs">
-            <div class="flex items-center gap-2 text-green-900 font-medium">
-              <Tag class="w-3.5 h-3.5 text-green-600 shrink-0" />
-              <span>Cupón <strong>{{ appliedCoupon }}</strong> (10% OFF)</span>
+          <!-- Si tiene cupón disponible (desbloqueado por bienvenida o aplicado) -->
+          <div v-if="hasCouponAvailable" class="p-3 bg-amber-50/70 border border-amber-200/90 rounded-xl space-y-2 text-xs">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5 font-semibold text-[#1E1B18]">
+                <Tag class="w-3.5 h-3.5 text-[#F28482]" />
+                <span>Cupón: <strong class="text-[#F28482]">TALLER10</strong> (10% OFF)</span>
+              </div>
+              <span class="text-[10px] bg-[#2E7D32]/10 text-[#2E7D32] font-bold px-2 py-0.5 rounded-full">
+                Disponible
+              </span>
             </div>
-            <button
-              @click="removeCoupon"
-              type="button"
-              class="text-[#8D857B] hover:text-rose-600 p-1 cursor-pointer transition-colors"
-              title="Quitar cupón"
-            >
-              <X class="w-3.5 h-3.5" />
-            </button>
+
+            <p class="text-[11px] text-[#6B655D]">
+              ¿Deseas usar tu cupón de descuento en este pedido?
+            </p>
+
+            <div class="space-y-1.5">
+              <label
+                class="flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors"
+                :class="useCouponInOrder ? 'bg-white border-[#F28482] shadow-2xs font-medium text-[#1E1B18]' : 'bg-white/60 border-[#E6DFD5] text-[#6B655D] hover:bg-white'"
+              >
+                <input
+                  type="radio"
+                  :value="true"
+                  v-model="useCouponInOrder"
+                  class="accent-[#F28482]"
+                />
+                <span class="text-xs">Usar ahora (-{{ cartService.formatARS(potentialDiscount) }})</span>
+              </label>
+
+              <label
+                class="flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors"
+                :class="!useCouponInOrder ? 'bg-white border-[#1E1B18] shadow-2xs font-medium text-[#1E1B18]' : 'bg-white/60 border-[#E6DFD5] text-[#6B655D] hover:bg-white'"
+              >
+                <input
+                  type="radio"
+                  :value="false"
+                  v-model="useCouponInOrder"
+                  class="accent-[#F28482]"
+                />
+                <span class="text-xs">No usar (guardar para otra compra)</span>
+              </label>
+            </div>
           </div>
 
-          <!-- Si aún no se aplicó -->
+          <!-- Si aún no se aplicó y no lo tiene desbloqueado -->
           <div v-else class="space-y-1.5">
             <div class="flex gap-2">
               <input
@@ -367,8 +460,12 @@
             <span class="font-medium text-[#1E1B18]">{{ cartService.formatARS(cartSubtotal) }}</span>
           </div>
           <div v-if="discountAmount > 0" class="flex justify-between text-[#2E7D32]">
-            <span>Descuento ({{ appliedCoupon }})</span>
+            <span>Descuento aplicado (10% OFF)</span>
             <span class="font-semibold">- {{ cartService.formatARS(discountAmount) }}</span>
+          </div>
+          <div v-else-if="hasCouponAvailable && !useCouponInOrder" class="flex justify-between text-[11px] text-[#8D857B] italic">
+            <span>Descuento cupón:</span>
+            <span>Guardado para próxima compra</span>
           </div>
           <div class="flex justify-between text-[#6B655D]">
             <span>Envío</span>
@@ -461,8 +558,22 @@ export default {
     discountAmount() {
       return couponService.calculateDiscount(this.cartSubtotal);
     },
+    potentialDiscount() {
+      return couponService.calculatePotentialDiscount(this.cartSubtotal);
+    },
     appliedCoupon() {
       return couponService.appliedCoupon.value;
+    },
+    hasCouponAvailable() {
+      return Boolean(couponService.hasCouponAvailable.value);
+    },
+    useCouponInOrder: {
+      get() {
+        return couponService.useInCurrentPurchase.value;
+      },
+      set(val) {
+        couponService.setUseInCurrentPurchase(val);
+      },
     },
     total() {
       return Math.max(0, this.cartSubtotal - this.discountAmount + this.shippingCost);

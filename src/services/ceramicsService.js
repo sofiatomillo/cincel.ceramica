@@ -76,6 +76,14 @@ function loadFromStorage() {
               parsed[idx].imageSrc = taza.imageSrc;
               updated = true;
             }
+            if (taza.creator_name && !parsed[idx].creator_name) {
+              parsed[idx].creator_id = taza.creator_id;
+              parsed[idx].creator_name = taza.creator_name;
+              parsed[idx].creator_email = taza.creator_email;
+              parsed[idx].creator_role = taza.creator_role;
+              parsed[idx].creator_bio = taza.creator_bio;
+              updated = true;
+            }
           }
         });
 

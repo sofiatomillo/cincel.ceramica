@@ -7,6 +7,30 @@ const SALES_STORAGE_KEY = 'cincel_sales_v1';
 
 const SEED_SALES = [
   {
+    id: 'CIN-892401',
+    user_id: 'b560da99-dff3-4b2e-9c05-bd932c8179f5',
+    customer_name: 'Martín Gómez',
+    customer_email: 'martin.gomez@gmail.com',
+    customer_phone: '+54 11 5521-8844',
+    shipping_address: 'Calle Honduras 4820, Palermo, CABA (CP C1414)',
+    total_amount: 23000,
+    status: 'pendiente_confirmacion',
+    payment_method: 'mercadopago',
+    created_at: new Date(Date.now() - 3600000 * 3).toISOString(), // Hace 3 horas
+    notes: 'Pedido recepcionado. Pendiente de revisión y confirmación por Sofía Tomillo.',
+    sale_items: [
+      {
+        id: 'item-martin-01',
+        product_id: 'vaso-termico-verde-musgo',
+        product_title: 'Vaso Cerámico Verde Musgo (Pieza de Camila Torres)',
+        product_image: '/assets/aistudio/adam-rasheed-BGEqCc-bQHg-unsplash_e8da9bcc.jpg',
+        unit_price: 17500,
+        quantity: 1,
+        subtotal: 17500,
+      },
+    ],
+  },
+  {
     id: 'CIN-749102',
     user_id: 'customer-laura-russo',
     customer_name: 'Laura Russo',
@@ -16,6 +40,9 @@ const SEED_SALES = [
     total_amount: 32000,
     status: 'en_camino',
     payment_method: 'mercadopago',
+    confirmed_by: 'Sofía Tomillo',
+    confirmed_at: new Date(Date.now() - 86400000).toISOString(),
+    notes: 'Pedido confirmado por Sofía Tomillo. Embalaje protegido con plástico burbuja y caja reforzada.',
     created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
     sale_items: [
       {
@@ -61,7 +88,14 @@ function loadSalesFromStorage() {
           (s) => (s.customer_email || '').toLowerCase() === 'laura.r@gmail.com'
         );
         if (!hasLaura) {
-          parsed.unshift(...SEED_SALES);
+          parsed.unshift(SEED_SALES[1]);
+          updated = true;
+        }
+        const hasMartin = parsed.some(
+          (s) => (s.customer_email || '').toLowerCase() === 'martin.gomez@gmail.com'
+        );
+        if (!hasMartin) {
+          parsed.unshift(SEED_SALES[0]);
           updated = true;
         }
         if (updated) {
@@ -126,8 +160,9 @@ export const salesService = {
       customer_phone: customerData.phone || '',
       shipping_address: `${customerData.address || ''}, ${customerData.city || ''} (CP ${customerData.postalCode || ''})`,
       total_amount: totalAmount,
-      status: 'completado',
+      status: 'pendiente_confirmacion', // Llega a la bandeja de recepción y confirmación del administrador
       payment_method: paymentMethod,
+      notes: 'Nuevo pedido recepcionado en tienda online. Pendiente de confirmación por Sofía Tomillo.',
       created_at: new Date().toISOString(),
       sale_items: cartItems.map((item) => ({
         id: `item-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
@@ -167,8 +202,9 @@ export const salesService = {
           customer_phone: newSale.customer_phone,
           shipping_address: newSale.shipping_address,
           total_amount: newSale.total_amount,
-          status: 'completado',
+          status: 'pendiente_confirmacion',
           payment_method: newSale.payment_method,
+          notes: newSale.notes,
         })
         .select()
         .single();
@@ -192,6 +228,100 @@ export const salesService = {
     }
 
     return newSale;
+  },
+
+  // Confirmar pedido por el administrador (Sofía Tomillo) y guardar en Supabase
+  async confirmOrder(saleId, options = {}) {
+    const adminNotes = options.notes || 'Pedido revisado y confirmado por Sofía Tomillo. Embalaje listo para despacho.';
+    const newStatus = options.status || 'confirmado';
+    const now = new Date().toISOString();
+
+    const sale = sales.value.find((s) => s.id === saleId);
+    if (sale) {
+      sale.status = newStatus;
+      sale.confirmed_at = now;
+      sale.confirmed_by = 'Sofía Tomillo';
+      sale.notes = adminNotes;
+      sale.supabase_synced = true;
+      sale.supabase_last_sync = now;
+      saveSalesToStorage(sales.value);
+    }
+
+    // Guardar en la base de datos de Supabase (public.sales)
+    let dbSuccess = false;
+    let dbError = null;
+    try {
+      const payload = {
+        customer_name: sale?.customer_name,
+        customer_email: sale?.customer_email,
+        customer_phone: sale?.customer_phone,
+        shipping_address: sale?.shipping_address,
+        total_amount: sale?.total_amount,
+        status: newStatus,
+        payment_method: sale?.payment_method,
+        notes: adminNotes,
+      };
+
+      const { data, error } = await supabase
+        .from('sales')
+        .update(payload)
+        .eq('id', saleId)
+        .select();
+
+      if (!error && data && data.length > 0) {
+        dbSuccess = true;
+      } else {
+        const { error: insErr } = await supabase
+          .from('sales')
+          .insert(payload);
+        if (!insErr) {
+          dbSuccess = true;
+        } else {
+          dbError = insErr;
+        }
+      }
+    } catch (err) {
+      console.warn('Error al guardar confirmación en Supabase:', err);
+      dbError = err;
+    }
+
+    return {
+      success: true,
+      sale,
+      confirmed_at: now,
+      confirmed_by: 'Sofía Tomillo',
+      supabase_synced: dbSuccess,
+      error: dbError?.message,
+    };
+  },
+
+  // Actualizar estado del pedido (ej. pasar a "en_camino" / Embalaje y Despacho)
+  async updateOrderStatus(saleId, newStatus, extraNotes = '') {
+    const now = new Date().toISOString();
+    const sale = sales.value.find((s) => s.id === saleId);
+    if (sale) {
+      sale.status = newStatus;
+      if (extraNotes) {
+        sale.notes = extraNotes;
+      }
+      sale.updated_at = now;
+      sale.supabase_synced = true;
+      saveSalesToStorage(sales.value);
+    }
+
+    try {
+      await supabase
+        .from('sales')
+        .update({
+          status: newStatus,
+          notes: sale?.notes,
+        })
+        .eq('id', saleId);
+    } catch (err) {
+      console.warn('Actualización de estado en Supabase pendiente:', err);
+    }
+
+    return sale;
   },
 
   async cancelSale(saleId, reason = 'Arrepentimiento de compra') {

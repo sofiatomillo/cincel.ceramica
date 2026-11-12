@@ -51,6 +51,11 @@ export const INITIAL_CERAMIC_PIECES = [
     stockCount: 6,
     createdAt: '2026-11-05T09:00:00Z',
     isPopular: true,
+    creator_id: '884070cb-f48d-4ee8-a77a-1e54087320b0',
+    creator_name: 'Camila Torres',
+    creator_email: 'camila.torres@gmail.com',
+    creator_role: 'Ceramista Artesana Residente',
+    creator_bio: 'Ceramista y artesana residente en Cincel. Creadora y alfarera de piezas funcionales torneadas a mano con gres mineral y esmaltes reactivos de alta temperatura.',
   },
   {
     id: 'set-pocillos-espresso-pasteles',

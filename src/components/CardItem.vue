@@ -39,6 +39,10 @@
             {{ formattedPrice }}
           </span>
         </div>
+        <div v-if="piece.creator_name" class="mb-2 flex items-center gap-1.5 text-[11px] text-[#2E7D32] font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#2E7D32]" />
+          <span>Pieza de autor: {{ piece.creator_name }}</span>
+        </div>
         <p class="text-sm text-[#5C564E] leading-relaxed mb-4 line-clamp-2 font-normal">
           {{ piece.description }}
         </p>

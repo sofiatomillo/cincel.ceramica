@@ -108,6 +108,39 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Ficha de Creadora de la Pieza (Camila Torres / Usuaria Creadora) -->
+              <div
+                v-if="piece.creator_name"
+                class="mt-6 p-4.5 bg-gradient-to-br from-emerald-50/70 via-[#FAF7F2] to-white rounded-2xl border border-emerald-200/90 shadow-2xs space-y-2.5"
+              >
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-full bg-[#2E7D32] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                      CT
+                    </div>
+                    <div>
+                      <span class="text-[10px] uppercase font-bold tracking-wider text-[#2E7D32] block">
+                        PIEZA DE AUTOR ARTESANAL
+                      </span>
+                      <h4 class="font-serif text-sm font-semibold text-[#1E1B18]">
+                        Creada por {{ piece.creator_name }}
+                      </h4>
+                    </div>
+                  </div>
+                  <span class="text-[10px] font-semibold bg-emerald-100 text-[#2E7D32] px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    {{ piece.creator_role || 'Ceramista Creadora' }}
+                  </span>
+                </div>
+
+                <p class="text-xs text-[#5C564E] leading-relaxed">
+                  {{ piece.creator_bio }}
+                </p>
+
+                <div v-if="isCreatorUser" class="p-2.5 bg-emerald-100/80 rounded-xl text-xs text-[#2E7D32] font-medium flex items-center gap-2">
+                  <span>✨ <strong>¡Hola Camila!</strong> Esta es tu pieza de autor creada y catalogada en Cincel Cerámica.</span>
+                </div>
+              </div>
             </div>
 
             <!-- Acciones de compra y gestión (CRUD) -->
@@ -227,6 +260,9 @@ export default {
   computed: {
     isAdmin() {
       return authService.isAdmin.value;
+    },
+    isCreatorUser() {
+      return authService.isCreator?.value;
     },
     piece() {
       return ceramicsService.getById(this.$route.params.id);

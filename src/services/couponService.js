@@ -30,6 +30,8 @@ function saveEarnedCoupons(list) {
 const earnedList = ref(loadEarnedCoupons());
 const appliedCoupon = ref(null);
 const justWonWelcomeCoupon = ref(null);
+// Opción de usar o no usar el cupón en la compra actual
+const useInCurrentPurchase = ref(true);
 
 const isWelcomeCouponUnlocked = computed(() => {
   const currentEmail = (authService.user.value?.email || '').toLowerCase().trim();
@@ -38,12 +40,18 @@ const isWelcomeCouponUnlocked = computed(() => {
   return earnedList.value.includes(currentEmail) || authService.isCustomer.value;
 });
 
+const hasCouponAvailable = computed(() => {
+  return Boolean(appliedCoupon.value || isWelcomeCouponUnlocked.value);
+});
+
 export const couponService = {
   WELCOME_COUPON_CODE,
   WELCOME_DISCOUNT_PERCENT,
   appliedCoupon,
   justWonWelcomeCoupon,
   isWelcomeCouponUnlocked,
+  hasCouponAvailable,
+  useInCurrentPurchase,
 
   awardWelcomeCoupon(email, fullName = '') {
     const clean = (email || '').toLowerCase().trim();
@@ -64,6 +72,10 @@ export const couponService = {
     justWonWelcomeCoupon.value = null;
   },
 
+  setUseInCurrentPurchase(value) {
+    useInCurrentPurchase.value = Boolean(value);
+  },
+
   applyCoupon(code) {
     const clean = (code || '').toUpperCase().trim();
     if (clean === WELCOME_COUPON_CODE) {
@@ -75,6 +87,7 @@ export const couponService = {
         };
       }
       appliedCoupon.value = WELCOME_COUPON_CODE;
+      useInCurrentPurchase.value = true;
       return {
         success: true,
         discountPercent: WELCOME_DISCOUNT_PERCENT,
@@ -93,9 +106,23 @@ export const couponService = {
   },
 
   calculateDiscount(subtotal) {
-    if (appliedCoupon.value === WELCOME_COUPON_CODE) {
+    // Si el usuario eligió NO usar su cupón en este pedido, el descuento es 0
+    if (!useInCurrentPurchase.value) {
+      return 0;
+    }
+    // Si tiene cupón aplicado o cupón de bienvenida desbloqueado
+    if (appliedCoupon.value === WELCOME_COUPON_CODE || isWelcomeCouponUnlocked.value) {
+      return Math.round((subtotal * WELCOME_DISCOUNT_PERCENT) / 100);
+    }
+    return 0;
+  },
+
+  // Retorna el descuento potencial que obtendría si decide usarlo
+  calculatePotentialDiscount(subtotal) {
+    if (appliedCoupon.value === WELCOME_COUPON_CODE || isWelcomeCouponUnlocked.value) {
       return Math.round((subtotal * WELCOME_DISCOUNT_PERCENT) / 100);
     }
     return 0;
   },
 };
+

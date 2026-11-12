@@ -137,6 +137,36 @@
                 </p>
               </div>
 
+              <!-- ACCESO RÁPIDO PARA USUARIOS GUARDADOS EN SUPABASE (Cliente & Creadora) -->
+              <div v-if="currentRole === 'customer' && !isRegistering" class="mb-3.5 space-y-2">
+                <!-- Tarjeta Camila Torres: Usuaria Creadora de Pieza -->
+                <div class="p-3 bg-gradient-to-br from-emerald-50/60 to-white rounded-xl border border-emerald-200/90 text-xs flex items-center justify-between gap-3 shadow-2xs">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-full bg-[#2E7D32] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      CT
+                    </div>
+                    <div class="truncate">
+                      <div class="flex items-center gap-1.5">
+                        <strong class="text-[#1E1B18] text-xs truncate">Camila Torres</strong>
+                        <span class="text-[9px] font-semibold bg-emerald-100 text-[#2E7D32] px-1.5 py-0.5 rounded-full shrink-0">
+                          ✨ Creadora de pieza
+                        </span>
+                      </div>
+                      <p class="text-[10px] text-[#6B655D] truncate">
+                        Autora de «Vaso Cerámico Verde Musgo»
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    @click="handleCreatorQuickLogin"
+                    class="px-3 py-1.5 bg-[#2E7D32] hover:bg-[#256829] text-white text-[11px] font-semibold rounded-lg transition-colors cursor-pointer shrink-0 shadow-xs"
+                  >
+                    Entrar
+                  </button>
+                </div>
+              </div>
+
               <!-- BLOQUE DE ADMINISTRADOR DESTACADO (si currentRole === 'admin') -->
               <div v-if="currentRole === 'admin'" class="mb-4">
                 <div class="p-3.5 bg-gradient-to-br from-[#FAF7F2] to-amber-50/50 rounded-2xl border border-amber-200/90 shadow-2xs flex flex-col gap-2.5">
@@ -468,6 +498,18 @@ export default {
       const res = authService.loginAsAdminMock();
       if (res.success) {
         this.successMessage = '¡Bienvenida Sofía Tomillo! Has ingresado como Administradora.';
+        setTimeout(() => {
+          this.$emit('loginSuccess');
+          this.$emit('close');
+          authService.closeAuthModal();
+        }, 500);
+      }
+    },
+
+    handleCreatorQuickLogin() {
+      const res = authService.loginAsCreatorMock();
+      if (res.success) {
+        this.successMessage = '¡Bienvenida Camila Torres! Has ingresado como Creadora de piezas cerámicas.';
         setTimeout(() => {
           this.$emit('loginSuccess');
           this.$emit('close');

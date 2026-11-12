@@ -44,16 +44,19 @@
           Contacto
         </router-link>
 
-        <!-- Enlace a Ventas (Visible solo para administradores) -->
+        <!-- Enlace a Recepción de Pedidos y Ventas (Visible solo para administradores) -->
         <router-link
           v-if="isAdmin"
-          to="/ventas"
+          to="/ventas#recepcion-pedidos"
           class="inline-flex items-center gap-1.5 text-sm font-medium transition-colors px-2.5 py-1 rounded-lg bg-[#FAF0E6] text-[#C85A54] hover:bg-[#FBE4E2]"
           :class="[$route.path === '/ventas' ? 'ring-1 ring-[#F28482] font-semibold' : '']"
         >
-          <BarChart3 class="w-3.5 h-3.5" />
-          <span>Ventas</span>
-          <span class="text-[9px] bg-[#F28482] text-white px-1.5 py-0.2 rounded-full font-bold">Admin</span>
+          <Inbox class="w-3.5 h-3.5 text-[#2E7D32]" />
+          <span>Pedidos</span>
+          <span v-if="pendingOrdersCount > 0" class="text-[9px] bg-[#2E7D32] text-white px-1.5 py-0.2 rounded-full font-bold animate-pulse">
+            {{ pendingOrdersCount }}
+          </span>
+          <span v-else class="text-[9px] bg-[#F28482] text-white px-1.5 py-0.2 rounded-full font-bold">Admin</span>
         </router-link>
       </nav>
 
@@ -249,12 +252,26 @@
                 </router-link>
 
                 <router-link
-                  to="/ventas"
+                  to="/ventas#recepcion-pedidos"
+                  @click="userMenuOpen = false"
+                  class="flex items-center justify-between px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors font-medium"
+                >
+                  <div class="flex items-center gap-2.5">
+                    <Inbox class="w-3.5 h-3.5 text-[#2E7D32]" />
+                    <span>Recepción y confirmación</span>
+                  </div>
+                  <span v-if="pendingOrdersCount > 0" class="text-[9px] bg-[#2E7D32] text-white px-1.5 py-0.2 rounded-full font-bold">
+                    {{ pendingOrdersCount }}
+                  </span>
+                </router-link>
+
+                <router-link
+                  to="/ventas#historial"
                   @click="userMenuOpen = false"
                   class="flex items-center gap-2.5 px-4 py-2 text-xs text-[#2D2A26] hover:bg-[#FAF7F2] transition-colors"
                 >
                   <BarChart3 class="w-3.5 h-3.5 text-[#F28482]" />
-                  <span>Panel de ventas y pedidos</span>
+                  <span>Historial de ventas y métricas</span>
                 </router-link>
 
                 <button
@@ -366,12 +383,18 @@
 
       <router-link
         v-if="isAdmin"
-        to="/ventas"
+        to="/ventas#recepcion-pedidos"
         @click="mobileMenuOpen = false"
         class="block py-2 text-sm font-semibold text-[#C85A54] flex items-center justify-between"
       >
-        <span>Panel de Ventas</span>
-        <span class="text-[10px] bg-[#F28482] text-white px-2 py-0.5 rounded-full">Admin</span>
+        <span class="flex items-center gap-2">
+          <Inbox class="w-4 h-4 text-[#2E7D32]" />
+          Recepción y Confirmación
+        </span>
+        <span v-if="pendingOrdersCount > 0" class="text-[10px] bg-[#2E7D32] text-white px-2 py-0.5 rounded-full font-bold">
+          {{ pendingOrdersCount }}
+        </span>
+        <span v-else class="text-[10px] bg-[#F28482] text-white px-2 py-0.5 rounded-full">Admin</span>
       </router-link>
 
       <router-link
@@ -495,10 +518,12 @@ import {
   BarChart3,
   Edit3,
   Package,
+  Inbox,
 } from 'lucide-vue-next';
 import { cartService } from '../services/cartService';
 import { ceramicsService } from '../services/ceramicsService';
 import { authService } from '../services/authService';
+import { salesService } from '../services/salesService';
 import { siteContentService } from '../services/siteContentService';
 import { customerOrdersService } from '../services/customerOrdersService';
 import AuthModal from './AuthModal.vue';
@@ -519,6 +544,7 @@ export default {
     BarChart3,
     Edit3,
     Package,
+    Inbox,
     AuthModal,
     SqlExportModal,
   },
@@ -565,6 +591,11 @@ export default {
     },
     isCustomer() {
       return authService.isCustomer.value;
+    },
+    pendingOrdersCount() {
+      const s = salesService.sales;
+      const list = Array.isArray(s) ? s : (s?.value || []);
+      return list.filter((item) => item.status === 'pendiente_confirmacion' || item.status === 'pendiente').length;
     },
     customerOrdersCount() {
       return customerOrdersService.customerOrders.value?.length || 0;
